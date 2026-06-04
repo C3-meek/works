@@ -426,7 +426,8 @@ async function sbSelect(clientId, dateStr){
   const rows=await r.json(); return rows[0]||null;
 }
 async function sbUpsert(data){
-  const r=await sbFetch('/daily_reports',{
+  // on_conflict でUNIQUE制約カラムを指定しないとINSERTしか行われず重複エラーになる
+  const r=await sbFetch('/daily_reports?on_conflict=client_id,date_str',{
     method:'POST', prefer:'resolution=merge-duplicates,return=representation',
     body:JSON.stringify(data)
   });
