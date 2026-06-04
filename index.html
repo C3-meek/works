@@ -171,15 +171,51 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .toast.show{opacity:1}
 
 @media print{
-  .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,.cal-nav-btn,.sidebar-footer,.modal-overlay,.toast{display:none!important}
-  .app-shell{display:block}
-  .main-content{overflow:visible}
-  .content-grid{display:block;padding:0}
+  /* 非表示にする UI 要素 */
+  .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,
+  .cal-nav-btn,.sidebar-footer,.modal-overlay,.toast{display:none!important}
+
+  /* レイアウトリセット */
+  html,body{height:auto!important;overflow:visible!important}
+  .app-shell{display:block!important;height:auto!important;overflow:visible!important}
+  .main-content{overflow:visible!important;height:auto!important}
+  .content-grid{display:block!important;padding:0!important;height:auto!important;overflow:visible!important}
   .calendar-card,.report-stats{display:none!important}
-  .form-card{box-shadow:none;border:none;padding:0}
-  .top-bar{border:none;padding:0 0 12px}
-  textarea,input{border:none!important;background:transparent!important;padding:0!important}
-  .task-item{border:none;background:transparent;padding:2px 0}
+  .form-card{box-shadow:none!important;border:none!important;padding:0!important;height:auto!important;overflow:visible!important}
+  .top-bar{border:none!important;padding:0 0 12px!important}
+
+  /* textarea: 内容に応じて高さを自動伸長させる核心部分 */
+  textarea{
+    display:block!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    overflow-y:visible!important;
+    border:none!important;
+    background:transparent!important;
+    padding:0!important;
+    resize:none!important;
+    white-space:pre-wrap!important;
+    word-break:break-word!important;
+    /* Firefox / Chrome でテキストが全て展開されるよう強制 */
+    field-sizing:content;
+  }
+
+  /* input はそのまま1行表示 */
+  input[type=text],input[type=time]{
+    border:none!important;
+    background:transparent!important;
+    padding:0!important;
+  }
+
+  /* セクション・フォームの高さを自動に */
+  .form-section{height:auto!important;overflow:visible!important;margin-bottom:12px!important}
+  .form-row{height:auto!important;overflow:visible!important}
+  .task-item{border:none!important;background:transparent!important;padding:2px 0!important}
+
+  /* ページ内で途中切断を防ぐ */
+  .form-section{page-break-inside:avoid}
 }
 </style>
 </head>
@@ -390,14 +426,10 @@ async function sbSelect(clientId, dateStr){
   const rows=await r.json(); return rows[0]||null;
 }
 async function sbUpsert(data){
-  const r=await sbFetch(
-    '/daily_reports?on_conflict=client_id,date_str',
-    {
-      method:'POST',
-      prefer:'resolution=merge-duplicates,return=representation',
-      body:JSON.stringify(data)
-    }
-  );
+  const r=await sbFetch('/daily_reports',{
+    method:'POST', prefer:'resolution=merge-duplicates,return=representation',
+    body:JSON.stringify(data)
+  });
   if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||`HTTP ${r.status}`); }
   return r.json();
 }
@@ -866,8 +898,121 @@ async function confirmDelete(){
 /* ==============================
    PDF / PRINT
    ============================== */
-function printCurrent(){ if(!selectedDate){ alert('日付を選択してください'); return; } window.print(); }
 
+// 共通CSS（印刷用別ウィンドウ）
+function printCSS(accentColor){
+  return `
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;
+     font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}
+h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;
+   border-bottom:2px solid ${accentColor}}
+h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}
+.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;
+        page-break-inside:avoid}
+.report:last-child{border-bottom:none}
+.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;
+          margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}
+.r-date{font-size:11.5pt;font-weight:bold}
+.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}
+.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}
+.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;
+      font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}
+.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;
+        font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}
+.sec{margin-bottom:4mm;page-break-inside:avoid}
+.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;
+        border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;
+        margin-bottom:2mm;letter-spacing:.05em}
+/* ★ テキストは <div> で展開 — 高さ制限なし、全文表示 */
+.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;
+      line-height:1.8;min-height:1em}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}
+.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}
+.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:8pt;color:#1D9E75;margin-top:1.5pt}
+@media print{body{padding:12mm 15mm}}
+  `;
+}
+
+// 1件分のレポートHTML（<div>ベース — textareaを使わない）
+function buildReportHTML(r, clientName){
+  let mins=0;
+  if(r.time_start&&r.time_end){
+    const [sh,sm]=r.time_start.split(':').map(Number),[eh,em]=r.time_end.split(':').map(Number);
+    mins=Math.max(0,eh*60+em-sh*60-sm);
+  }
+  const hh=Math.floor(mins/60),mm2=mins%60;
+  const tl=mins>0?`${r.time_start}〜${r.time_end}（${hh}時間${mm2?mm2+'分':''}）`:`${r.time_start||''}〜${r.time_end||''}`;
+  const dt=parseDate(r.date_str);
+  const dl=`${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${DOW[dt.getDay()]}）${r.title?' — '+sh(r.title):''}`;
+  let html=`<div class="report">
+    <div class="r-header">
+      <div>
+        <div class="r-date">${dl}</div>
+        <div class="r-client">${sh(r.client||clientName)}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="r-time">${sh(tl)}</div>
+        <span class="${r.submitted?'bsub':'bdraft'}">${r.submitted?'✓ 提出済':'下書き'}</span>
+      </div>
+    </div>`;
+  const vt=(r.tasks||[]).filter(t=>t.text);
+  if(vt.length){
+    html+=`<div class="sec"><div class="slabel">タスク</div>`;
+    vt.forEach(t=>{ html+=`<div class="tr"><div class="tc">${t.done?'✓':''}</div><div>${sh(t.text)}</div></div>`; });
+    html+=`</div>`;
+  }
+  // ★ textareaの代わりに <div class="sval"> で全文展開
+  if(r.work) html+=`<div class="sec"><div class="slabel">作業内容・成果</div><div class="sval">${sh(r.work)}</div></div>`;
+  if(r.issue||r.next_plan){
+    html+=`<div class="g2">`;
+    if(r.issue)     html+=`<div class="sec"><div class="slabel">課題・問題点</div><div class="sval">${sh(r.issue)}</div></div>`;
+    if(r.next_plan) html+=`<div class="sec"><div class="slabel">翌日の予定</div><div class="sval">${sh(r.next_plan)}</div></div>`;
+    html+=`</div>`;
+  }
+  if(r.memo) html+=`<div class="sec"><div class="slabel">連絡事項</div><div class="sval">${sh(r.memo)}</div></div>`;
+  html+=`</div>`;
+  return { html, mins, doneTasks: vt.filter(t=>t.done).length };
+}
+
+// 1日分の印刷
+async function printCurrent(){
+  if(!selectedDate){ alert('日付を選択してください'); return; }
+  if(!activeClient) return;
+  // 最新データを取得（未保存の場合はキャッシュ or フォームから読む）
+  let row = getCached(activeClient.id, selectedDate);
+  if(!row){
+    try{ row = await sbSelect(activeClient.id, selectedDate); }catch(e){}
+  }
+  if(!row){
+    // フォームの内容をそのまま使う（未保存でも印刷可能）
+    row = {
+      date_str: selectedDate,
+      title:      document.getElementById('f-title')?.value||'',
+      client:     document.getElementById('f-client')?.value||activeClient.name,
+      time_start: document.getElementById('f-start')?.value||'',
+      time_end:   document.getElementById('f-end')?.value||'',
+      tasks:      tasks.map(t=>({...t})),
+      work:       document.getElementById('f-work')?.value||'',
+      issue:      document.getElementById('f-issue')?.value||'',
+      next_plan:  document.getElementById('f-next')?.value||'',
+      memo:       document.getElementById('f-memo')?.value||'',
+      submitted:  false
+    };
+  }
+  const { html } = buildReportHTML(row, activeClient.name);
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+    <title>${activeClient.name} ${labelDate(selectedDate)} 業務日報</title>
+    <style>${printCSS(activeClient.color)}</style></head>
+    <body>${html}</body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(), 400);
+}
+
+// 月次PDF
 async function exportMonthPDF(){
   if(!activeClient){ alert('クライアントを選択してください'); return; }
   setSyncStatus('syncing','取得中...');
@@ -876,32 +1021,25 @@ async function exportMonthPDF(){
   catch(e){ setSyncStatus('error','エラー'); alert('取得失敗: '+e.message); return; }
   if(!reports.length){ alert('今月の日報がありません'); return; }
 
-  const css=`*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.7}h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${activeClient.color}}h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;page-break-inside:avoid}.report:last-child{border-bottom:none}.r-header{border-left:4px solid ${activeClient.color};background:#F8FAF8;padding:3mm 5mm;margin-bottom:4mm;display:flex;justify-content:space-between;align-items:center}.r-date{font-size:11.5pt;font-weight:bold}.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.sec{margin-bottom:3.5mm}.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;margin-bottom:1.5mm;letter-spacing:.05em}.sval{font-size:10pt;white-space:pre-wrap}.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:3.5mm}.tr{display:flex;gap:3mm;padding:1mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;color:#1D9E75;margin-top:1pt}@media print{body{padding:12mm 15mm}}`;
-
   let body='', totalMins=0, doneTasks=0;
   reports.forEach(r=>{
-    let mins=0;
-    if(r.time_start&&r.time_end){
-      const [sh,sm]=r.time_start.split(':').map(Number),[eh,em]=r.time_end.split(':').map(Number);
-      mins=Math.max(0,eh*60+em-sh*60-sm); totalMins+=mins;
-    }
-    const hh=Math.floor(mins/60),mm2=mins%60;
-    const tl=mins>0?`${r.time_start}〜${r.time_end}（${hh}時間${mm2?mm2+'分':''}）`:`${r.time_start||''}〜${r.time_end||''}`;
-    const dt=parseDate(r.date_str);
-    const dl=`${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${DOW[dt.getDay()]}）${r.title?' — '+r.title:''}`;
-    body+=`<div class="report"><div class="r-header"><div><div class="r-date">${dl}</div><div class="r-client">${sh(r.client)||activeClient.name}</div></div><div style="text-align:right"><div class="r-time">${sh(tl)}</div><span class="${r.submitted?'bsub':'bdraft'}">${r.submitted?'✓ 提出済':'下書き'}</span></div></div>`;
-    const vt=(r.tasks||[]).filter(t=>t.text);
-    if(vt.length){ body+=`<div class="sec"><div class="slabel">タスク</div>`; vt.forEach(t=>{ if(t.done)doneTasks++; body+=`<div class="tr"><div class="tc">${t.done?'✓':''}</div><div>${sh(t.text)}</div></div>`; }); body+=`</div>`; }
-    if(r.work) body+=`<div class="sec"><div class="slabel">作業内容・成果</div><div class="sval">${sh(r.work)}</div></div>`;
-    if(r.issue||r.next_plan){ body+=`<div class="g2">`; if(r.issue) body+=`<div class="sec"><div class="slabel">課題・問題点</div><div class="sval">${sh(r.issue)}</div></div>`; if(r.next_plan) body+=`<div class="sec"><div class="slabel">翌日の予定</div><div class="sval">${sh(r.next_plan)}</div></div>`; body+=`</div>`; }
-    if(r.memo) body+=`<div class="sec"><div class="slabel">連絡事項</div><div class="sval">${sh(r.memo)}</div></div>`;
-    body+=`</div>`;
+    const res = buildReportHTML(r, activeClient.name);
+    body += res.html;
+    totalMins += res.mins;
+    doneTasks += res.doneTasks;
   });
 
   const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${curYear}年${MO[curMonth]} 業務日報</title><style>${css}</style></head><body><h1>${activeClient.name}</h1><h2>${curYear}年${MO[curMonth]}　業務日報　／　${reports.length}件・稼働${Math.floor(totalMins/60)}時間・完了タスク${doneTasks}件</h2>${body}</body></html>`);
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+    <title>${activeClient.name} ${curYear}年${MO[curMonth]} 業務日報</title>
+    <style>${printCSS(activeClient.color)}</style></head>
+    <body>
+      <h1>${sh(activeClient.name)}</h1>
+      <h2>${curYear}年${MO[curMonth]}　業務日報　／　${reports.length}件・稼働${Math.floor(totalMins/60)}時間・完了タスク${doneTasks}件</h2>
+      ${body}
+    </body></html>`);
   win.document.close();
-  setTimeout(()=>win.print(),600);
+  setTimeout(()=>win.print(), 600);
 }
 
 /* ==============================
