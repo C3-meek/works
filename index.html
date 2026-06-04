@@ -784,7 +784,13 @@ function renderForm(ds,row){
     <div class="form-section">
       <label>タスク一覧</label>
       <ul class="task-list" id="task-list"></ul>
-      <button class="add-task-btn" onclick="addTask()">＋ タスクを追加</button>
+      <div style="display:flex;gap:7px;margin-top:2px">
+        <button class="add-task-btn" style="flex:1" onclick="addTask()">＋ タスクを追加</button>
+        <button class="add-task-btn" id="btn-carryover" style="flex:1;color:var(--blue)"
+          onclick="carryOverTasks()" title="未完了タスクを翌日の日報に追加します">
+          📋 未完了を翌日へ持ち越し
+        </button>
+      </div>
     </div>
     <div class="form-section">
       <label>作業内容・成果</label>
@@ -831,6 +837,69 @@ function renderTasks(){
 }
 function addTask(){ tasks.push({text:'',done:false}); renderTasks(); const ins=document.querySelectorAll('.task-txt'); if(ins.length) ins[ins.length-1].focus(); }
 function removeTask(i){ tasks.splice(i,1); renderTasks(); }
+
+// 翌日（土日を除く翌営業日ではなく、単純に+1日）の日付文字列を返す
+function nextDateStr(ds){
+  const dt=parseDate(ds);
+  dt.setDate(dt.getDate()+1);
+  return fd(dt);
+}
+
+// 未完了タスクを翌日の日報に持ち越す
+async function carryOverTasks(){
+  if(!selectedDate||!activeClient) return;
+  const pending=tasks.filter(t=>t.text&&!t.done);
+  if(pending.length===0){ showToast('未完了のタスクがありません'); return; }
+
+  const nextDs=nextDateStr(selectedDate);
+  const nextLabel=labelDate(nextDs);
+
+  if(!confirm(`未完了タスク ${pending.length}件 を\n${nextLabel}\nの日報に追加しますか？`)) return;
+
+  const btn=document.getElementById('btn-carryover');
+  if(btn){ btn.disabled=true; btn.textContent='処理中...'; }
+
+  try{
+    // 翌日の既存データを取得（なければ新規）
+    setSyncStatus('syncing','読み込み中...');
+    let nextRow=getCached(activeClient.id,nextDs);
+    if(!nextRow){
+      nextRow=await sbSelect(activeClient.id,nextDs).catch(()=>null);
+    }
+    // 翌日のタスクリストに未完了タスクをマージ（テキスト重複は追加しない）
+    const existingTexts=new Set((nextRow?.tasks||[]).map(t=>t.text));
+    const toAdd=pending.filter(t=>!existingTexts.has(t.text)).map(t=>({text:t.text,done:false}));
+    if(toAdd.length===0){ showToast('翌日にすでに同じタスクが存在します'); return; }
+
+    const mergedTasks=[...(nextRow?.tasks||[]),...toAdd];
+    const nextData={
+      client_id: activeClient.id,
+      date_str: nextDs,
+      title:     nextRow?.title||'',
+      client:    nextRow?.client||activeClient.name,
+      time_start:nextRow?.time_start||'09:00',
+      time_end:  nextRow?.time_end||'18:00',
+      tasks:     mergedTasks,
+      work:      nextRow?.work||'',
+      issue:     nextRow?.issue||'',
+      next_plan: nextRow?.next_plan||'',
+      memo:      nextRow?.memo||'',
+      submitted: nextRow?.submitted||false,
+      updated_at:new Date().toISOString()
+    };
+
+    await sbUpsert(nextData);
+    setCached(activeClient.id,nextDs,nextData);
+    setSyncStatus('ok','Supabase 接続済');
+    renderCalendar(); updateStats(); renderClientList();
+    showToast(`✓ ${toAdd.length}件のタスクを ${nextLabel} に持ち越しました`);
+  }catch(e){
+    setSyncStatus('error','エラー');
+    showToast('❌ 持ち越し失敗: '+e.message);
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='📋 未完了を翌日へ持ち越し'; }
+  }
+}
 
 function calcHours(){
   const s=document.getElementById('f-start')?.value, e=document.getElementById('f-end')?.value;
