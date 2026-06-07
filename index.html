@@ -13,13 +13,12 @@
   --red:#D85A30;--red-light:#FAECE7;
   --amber:#BA7517;--amber-light:#FAEEDA;
   --blue:#185FA5;
+  --holiday:#7F77DD;--holiday-light:#EEECFB;
   --sidebar-w:220px;
   --font:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;
   --radius:10px;--shadow:0 2px 14px rgba(0,0,0,0.07);
 }
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
-
-/* ===== SETUP ===== */
 .setup-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
 .setup-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:36px 40px;width:100%;max-width:500px}
 .setup-card h2{font-size:18px;font-weight:700;margin-bottom:6px}
@@ -31,11 +30,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .setup-hint{font-size:11px;color:var(--text3);margin-top:4px}
 .setup-hint code{background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:10.5px}
 .setup-error{background:var(--red-light);border:1px solid #F0997B;border-radius:7px;padding:10px 14px;font-size:12px;color:var(--red);margin-top:12px;display:none;white-space:pre-wrap}
-
-/* ===== APP SHELL ===== */
 .app-shell{display:flex;height:100vh;overflow:hidden}
-
-/* ===== SIDEBAR ===== */
 .sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .sidebar-header{padding:18px 16px 12px;border-bottom:1px solid var(--border)}
 .sidebar-header h1{font-size:14px;font-weight:700;letter-spacing:0.01em}
@@ -46,7 +41,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .sync-dot.error{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .sync-label{font-size:10.5px;color:var(--text3)}
-
 .sidebar-section{padding:10px 12px 4px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
 .client-list{flex:1;overflow-y:auto;padding:4px 8px}
 .client-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all 0.12s;margin-bottom:2px;border:1px solid transparent}
@@ -57,16 +51,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .client-item.active .client-name{color:var(--accent-text);font-weight:600}
 .client-count{font-size:10px;color:var(--text3);margin-left:auto;flex-shrink:0}
 .client-item.active .client-count{color:var(--accent)}
-
 .sidebar-footer{padding:10px 8px;border-top:1px solid var(--border)}
 .add-client-btn{width:100%;background:none;border:1.5px dashed var(--border2);border-radius:8px;padding:7px;cursor:pointer;font-size:12px;color:var(--text2);font-family:var(--font);transition:all 0.12s}
 .add-client-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .settings-btn{display:flex;align-items:center;gap:6px;width:100%;background:none;border:none;padding:7px 10px;cursor:pointer;font-size:11.5px;color:var(--text3);font-family:var(--font);border-radius:6px;margin-top:4px}
 .settings-btn:hover{background:var(--bg);color:var(--text2)}
-
-/* ===== MAIN CONTENT ===== */
 .main-content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
-
 .top-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .top-bar-left{display:flex;align-items:center;gap:10px}
 .client-badge{display:flex;align-items:center;gap:8px}
@@ -74,10 +64,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .client-badge-name{font-size:15px;font-weight:700}
 .client-badge-meta{font-size:11.5px;color:var(--text3)}
 .top-bar-actions{display:flex;gap:8px}
-
 .content-grid{display:grid;grid-template-columns:280px 1fr;gap:20px;padding:20px 24px;align-items:start;flex:1}
-
-/* ===== BUTTONS ===== */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-size:12.5px;font-family:var(--font);cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:all 0.13s;white-space:nowrap}
 .btn:hover{background:#F0EDE7;border-color:#B8B5AE}
 .btn:disabled{opacity:0.45;cursor:not-allowed}
@@ -85,9 +72,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .btn-primary:hover:not(:disabled){background:#0F6E56;border-color:#0F6E56}
 .btn-danger{background:var(--red-light);border-color:#F0997B;color:var(--red)}
 .btn-danger:hover{background:#F5C4B3}
+/* ★ 休日ボタン */
+.btn-holiday{background:var(--holiday-light);border-color:#C8C4F0;color:var(--holiday)}
+.btn-holiday:hover:not(:disabled){background:#DDD9F7}
+.btn-holiday.is-on{background:var(--holiday);border-color:var(--holiday);color:#fff}
+.btn-holiday.is-on:hover:not(:disabled){background:#6860C8}
 .btn-sm{padding:5px 10px;font-size:12px}
-
-/* ===== CALENDAR ===== */
 .calendar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-nav-btn{background:none;border:1px solid var(--border);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all 0.1s}
@@ -107,13 +97,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .cal-day.selected.has-report::after{background:rgba(255,255,255,0.7)}
 .cal-day.sunday:not(.other-month){color:#D85A30}
 .cal-day.saturday:not(.other-month){color:#185FA5}
-
+/* ★ 休日セル */
+.cal-day.is-holiday:not(.other-month){background:var(--holiday-light)!important;color:var(--holiday)!important;border-color:#C8C4F0!important}
+.cal-day.is-holiday.selected{background:var(--holiday)!important;border-color:var(--holiday)!important}
+.cal-day.is-holiday::after{background:var(--holiday)!important}
+.cal-day.is-holiday.selected::after{background:rgba(255,255,255,0.7)!important}
 .report-stats{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .stat-item{text-align:center;background:var(--bg);border-radius:7px;padding:7px 4px}
 .stat-num{font-size:18px;font-weight:700;color:var(--accent)}
 .stat-label{font-size:10px;color:var(--text3);margin-top:1px}
-
-/* ===== FORM ===== */
 .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
 .form-date-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .form-date-label{font-size:15px;font-weight:700}
@@ -121,6 +113,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
 .badge-submitted{background:var(--accent-light);color:var(--accent-text)}
 .badge-draft{background:var(--amber-light);color:var(--amber)}
+.badge-holiday{background:var(--holiday-light);color:var(--holiday)}
+/* ★ 休日モード */
+.form-card.holiday-mode .work-fields{opacity:0.35;pointer-events:none;user-select:none}
+/* ★ 休日バナー */
+.holiday-banner{background:var(--holiday-light);border:1px solid #C8C4F0;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--holiday);font-size:13px;font-weight:600}
+.holiday-banner .hb-icon{font-size:20px}
 .form-section{margin-bottom:14px}
 .form-section label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:4px;letter-spacing:0.05em;text-transform:uppercase}
 .form-section input[type=text],.form-section input[type=time],.form-section textarea{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);transition:border-color 0.15s,background 0.15s;outline:none;resize:vertical}
@@ -142,13 +140,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .time-sep{color:var(--text2)}
 .time-calc{font-size:12px;color:var(--accent);font-weight:600;margin-left:4px}
 .form-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
-
-/* ===== EMPTY / NO CLIENT ===== */
 .empty-state{text-align:center;padding:56px 20px;color:var(--text3)}
 .empty-icon{font-size:42px;margin-bottom:12px;display:block}
 .empty-state p{font-size:13px;line-height:1.8}
-
-/* ===== MODALS ===== */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:12px;padding:24px;width:360px;box-shadow:0 8px 40px rgba(0,0,0,0.15)}
@@ -159,23 +153,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .modal-field input{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
 .modal-field input:focus{border-color:var(--accent);background:var(--surface)}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
-
-/* color swatches */
 .color-swatches{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
 .swatch{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all 0.1s}
 .swatch:hover{transform:scale(1.15)}
 .swatch.selected{border-color:var(--text);transform:scale(1.1)}
-
-/* ===== TOAST ===== */
 .toast{position:fixed;bottom:24px;right:24px;background:#1A1A18;color:#fff;padding:10px 17px;border-radius:8px;font-size:12.5px;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.18)}
 .toast.show{opacity:1}
-
 @media print{
-  /* 非表示にする UI 要素 */
   .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,
   .cal-nav-btn,.sidebar-footer,.modal-overlay,.toast{display:none!important}
-
-  /* レイアウトリセット */
   html,body{height:auto!important;overflow:visible!important}
   .app-shell{display:block!important;height:auto!important;overflow:visible!important}
   .main-content{overflow:visible!important;height:auto!important}
@@ -183,45 +169,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .calendar-card,.report-stats{display:none!important}
   .form-card{box-shadow:none!important;border:none!important;padding:0!important;height:auto!important;overflow:visible!important}
   .top-bar{border:none!important;padding:0 0 12px!important}
-
-  /* textarea: 内容に応じて高さを自動伸長させる核心部分 */
-  textarea{
-    display:block!important;
-    height:auto!important;
-    min-height:0!important;
-    max-height:none!important;
-    overflow:visible!important;
-    overflow-y:visible!important;
-    border:none!important;
-    background:transparent!important;
-    padding:0!important;
-    resize:none!important;
-    white-space:pre-wrap!important;
-    word-break:break-word!important;
-    /* Firefox / Chrome でテキストが全て展開されるよう強制 */
-    field-sizing:content;
-  }
-
-  /* input はそのまま1行表示 */
-  input[type=text],input[type=time]{
-    border:none!important;
-    background:transparent!important;
-    padding:0!important;
-  }
-
-  /* セクション・フォームの高さを自動に */
+  textarea{display:block!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;overflow-y:visible!important;border:none!important;background:transparent!important;padding:0!important;resize:none!important;white-space:pre-wrap!important;word-break:break-word!important;field-sizing:content;}
+  input[type=text],input[type=time]{border:none!important;background:transparent!important;padding:0!important}
   .form-section{height:auto!important;overflow:visible!important;margin-bottom:12px!important}
   .form-row{height:auto!important;overflow:visible!important}
   .task-item{border:none!important;background:transparent!important;padding:2px 0!important}
-
-  /* ページ内で途中切断を防ぐ */
   .form-section{page-break-inside:avoid}
 }
 </style>
 </head>
 <body>
 
-<!-- ===== SETUP ===== -->
 <div id="setup-wrap" class="setup-wrap" style="display:none">
   <div class="setup-card">
     <h2>🔧 Supabase 設定</h2>
@@ -243,10 +201,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
-<!-- ===== APP SHELL ===== -->
 <div id="app-shell" class="app-shell" style="display:none">
-
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-header">
       <h1>📋 業務日報</h1>
@@ -263,7 +218,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main-content">
     <div class="top-bar">
       <div class="top-bar-left" id="top-bar-left">
@@ -279,15 +233,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div>
         <div class="calendar-card">
           <div class="cal-nav">
-            <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
-            <span class="cal-title" id="cal-title">—</span>
-            <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+            <span class="cal-title" id="cal-title">&#8212;</span>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
           </div>
           <div class="cal-grid" id="cal-grid"></div>
           <div class="report-stats">
-            <div class="stat-item"><div class="stat-num" id="stat-count">—</div><div class="stat-label">今月の日報</div></div>
-            <div class="stat-item"><div class="stat-num" id="stat-hours">—</div><div class="stat-label">稼働時間</div></div>
-            <div class="stat-item"><div class="stat-num" id="stat-tasks">—</div><div class="stat-label">完了タスク</div></div>
+            <div class="stat-item"><div class="stat-num" id="stat-count">&#8212;</div><div class="stat-label">今月の日報</div></div>
+            <div class="stat-item"><div class="stat-num" id="stat-hours">&#8212;</div><div class="stat-label">稼働時間</div></div>
+            <div class="stat-item"><div class="stat-num" id="stat-tasks">&#8212;</div><div class="stat-label">完了タスク</div></div>
           </div>
         </div>
       </div>
@@ -301,7 +255,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
-<!-- ADD/EDIT CLIENT MODAL -->
 <div class="modal-overlay" id="client-modal">
   <div class="modal">
     <h3 id="client-modal-title">クライアントを追加</h3>
@@ -325,7 +278,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
-<!-- DELETE REPORT MODAL -->
 <div class="modal-overlay" id="delete-modal">
   <div class="modal">
     <h3>⚠️ 日報を削除しますか？</h3>
@@ -340,176 +292,113 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <div class="toast" id="toast"></div>
 
 <script>
-/* ==============================
-   CONSTANTS
-   ============================== */
-const COLORS = [
-  '#1D9E75','#185FA5','#D85A30','#BA7517',
-  '#7F77DD','#993556','#639922','#5F5E5A',
-  '#0F6E56','#993C1D'
-];
-const CONFIG_KEY  = 'nippo_sb_config';
-const CLIENTS_KEY = 'nippo_clients';
-const DOW = ['日','月','火','水','木','金','土'];
-const MO  = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const COLORS=['#1D9E75','#185FA5','#D85A30','#BA7517','#7F77DD','#993556','#639922','#5F5E5A','#0F6E56','#993C1D'];
+const CONFIG_KEY='nippo_sb_config';
+const CLIENTS_KEY='nippo_clients';
+const DOW=['日','月','火','水','木','金','土'];
+const MO=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
-/* ==============================
-   STATE
-   ============================== */
-let SB_URL = '', SB_KEY = '';
-let clients   = [];       // [{id,name,abbr,color}, ...]
-let activeClient = null;  // client obj
-let curYear, curMonth, selectedDate = null, tasks = [];
-let monthCache = {};      // "clientId:YYYY-MM" → {dateStr: row}
-const now = new Date();
-const todayStr = fd(now);
-curYear  = now.getFullYear();
-curMonth = now.getMonth();
+let SB_URL='',SB_KEY='';
+let clients=[],activeClient=null;
+let curYear,curMonth,selectedDate=null,tasks=[];
+let monthCache={};
+const now=new Date();
+const todayStr=fd(now);
+curYear=now.getFullYear(); curMonth=now.getMonth();
 
-/* ==============================
-   UTILS
-   ============================== */
-function fd(d){ return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}` }
-function p2(n){ return String(n).padStart(2,'0') }
-function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d) }
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
-function sh(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6) }
-function labelDate(ds){
-  const dt=parseDate(ds);
-  return `${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${DOW[dt.getDay()]}）`
-}
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2400);
-}
-function setSyncStatus(state,label){
-  const d=document.getElementById('sync-dot'), l=document.getElementById('sync-label');
-  if(!d) return;
-  d.className='sync-dot '+state; l.textContent=label;
-}
+function fd(d){return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
+function p2(n){return String(n).padStart(2,'0')}
+function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function sh(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function labelDate(ds){const dt=parseDate(ds);return `${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${DOW[dt.getDay()]}）`}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function setSyncStatus(state,label){const d=document.getElementById('sync-dot'),l=document.getElementById('sync-label');if(!d)return;d.className='sync-dot '+state;l.textContent=label}
 
-/* ==============================
-   CONFIG / CLIENTS PERSISTENCE
-   ============================== */
-function loadConfig(){ try{ return JSON.parse(localStorage.getItem(CONFIG_KEY)); }catch{ return null; } }
-function saveConfig(url,key){ localStorage.setItem(CONFIG_KEY,JSON.stringify({url:url.replace(/\/$/,''),key})); }
-function loadClients(){ try{ return JSON.parse(localStorage.getItem(CLIENTS_KEY))||[]; }catch{ return []; } }
-function persistClients(){ localStorage.setItem(CLIENTS_KEY,JSON.stringify(clients)); }
+function loadConfig(){try{return JSON.parse(localStorage.getItem(CONFIG_KEY))}catch{return null}}
+function saveConfig(url,key){localStorage.setItem(CONFIG_KEY,JSON.stringify({url:url.replace(/\/$/,''),key}))}
+function loadClients(){try{return JSON.parse(localStorage.getItem(CLIENTS_KEY))||[]}catch{return[]}}
+function persistClients(){localStorage.setItem(CLIENTS_KEY,JSON.stringify(clients))}
 function resetSettings(){
-  if(!confirm('設定をリセットして再設定画面に戻りますか？\nデータは Supabase に残ります。')) return;
-  localStorage.removeItem(CONFIG_KEY);
-  monthCache={};
+  if(!confirm('設定をリセットして再設定画面に戻りますか？\nデータは Supabase に残ります。'))return;
+  localStorage.removeItem(CONFIG_KEY);monthCache={};
   document.getElementById('app-shell').style.display='none';
   document.getElementById('setup-wrap').style.display='flex';
 }
 
-/* ==============================
-   SUPABASE API
-   ============================== */
-async function sbFetch(path, opts={}){
-  const res = await fetch(`${SB_URL}/rest/v1${path}`,{
-    ...opts,
-    headers:{
-      'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,
-      'Content-Type':'application/json',
-      'Prefer': opts.prefer||'',
-      ...(opts.headers||{})
-    }
-  });
+async function sbFetch(path,opts={}){
+  const res=await fetch(`${SB_URL}/rest/v1${path}`,{...opts,headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':opts.prefer||'',...(opts.headers||{})}});
   return res;
 }
-async function sbSelect(clientId, dateStr){
+async function sbSelect(clientId,dateStr){
   const r=await sbFetch(`/daily_reports?client_id=eq.${clientId}&date_str=eq.${dateStr}&select=*`);
-  if(!r.ok) throw new Error(`HTTP ${r.status}`);
-  const rows=await r.json(); return rows[0]||null;
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  const rows=await r.json();return rows[0]||null;
 }
 async function sbUpsert(data){
-  // on_conflict でUNIQUE制約カラムを指定しないとINSERTしか行われず重複エラーになる
-  const r=await sbFetch('/daily_reports?on_conflict=client_id,date_str',{
-    method:'POST', prefer:'resolution=merge-duplicates,return=representation',
-    body:JSON.stringify(data)
-  });
-  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||`HTTP ${r.status}`); }
+  const r=await sbFetch('/daily_reports?on_conflict=client_id,date_str',{method:'POST',prefer:'resolution=merge-duplicates,return=representation',body:JSON.stringify(data)});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||`HTTP ${r.status}`)}
   return r.json();
 }
-async function sbDelete(clientId, dateStr){
+async function sbDelete(clientId,dateStr){
   const r=await sbFetch(`/daily_reports?client_id=eq.${clientId}&date_str=eq.${dateStr}`,{method:'DELETE'});
-  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
 }
-async function sbSelectMonth(clientId, y, m){
-  const from=`${y}-${p2(m+1)}-01`, to=`${y}-${p2(m+1)}-31`;
+async function sbSelectMonth(clientId,y,m){
+  const from=`${y}-${p2(m+1)}-01`,to=`${y}-${p2(m+1)}-31`;
   const r=await sbFetch(`/daily_reports?client_id=eq.${clientId}&date_str=gte.${from}&date_str=lte.${to}&select=*&order=date_str.asc`);
-  if(!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-}
-async function sbSelectAllMonth(y, m){
-  const from=`${y}-${p2(m+1)}-01`, to=`${y}-${p2(m+1)}-31`;
-  const r=await sbFetch(`/daily_reports?date_str=gte.${from}&date_str=lte.${to}&select=*&order=client_id.asc,date_str.asc`);
-  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
   return r.json();
 }
 
-/* ==============================
-   CACHE
-   ============================== */
-function cacheKey(clientId,y,m){ return `${clientId}:${y}-${p2(m+1)}` }
+function cacheKey(clientId,y,m){return `${clientId}:${y}-${p2(m+1)}`}
 async function loadMonth(clientId,y,m){
   const ck=cacheKey(clientId,y,m);
-  if(monthCache[ck]) return monthCache[ck];
+  if(monthCache[ck])return monthCache[ck];
   setSyncStatus('syncing','読み込み中...');
   try{
     const rows=await sbSelectMonth(clientId,y,m);
-    const map={}; rows.forEach(r=>{ map[r.date_str]=r; });
-    monthCache[ck]=map;
-    setSyncStatus('ok','Supabase 接続済');
-    return map;
-  }catch(e){ setSyncStatus('error','接続エラー'); throw e; }
+    const map={};rows.forEach(r=>{map[r.date_str]=r});
+    monthCache[ck]=map;setSyncStatus('ok','Supabase 接続済');return map;
+  }catch(e){setSyncStatus('error','接続エラー');throw e}
 }
 function getCached(clientId,ds){
-  const [y,mo]=ds.split('-').map(Number);
+  const[y,mo]=ds.split('-').map(Number);
   const ck=cacheKey(clientId,y,mo-1);
   return monthCache[ck]?.[ds]||null;
 }
 function setCached(clientId,ds,row){
-  const [y,mo]=ds.split('-').map(Number);
+  const[y,mo]=ds.split('-').map(Number);
   const ck=cacheKey(clientId,y,mo-1);
-  if(!monthCache[ck]) monthCache[ck]={};
+  if(!monthCache[ck])monthCache[ck]={};
   monthCache[ck][ds]=row;
 }
 function delCached(clientId,ds){
-  const [y,mo]=ds.split('-').map(Number);
+  const[y,mo]=ds.split('-').map(Number);
   const ck=cacheKey(clientId,y,mo-1);
-  if(monthCache[ck]) delete monthCache[ck][ds];
+  if(monthCache[ck])delete monthCache[ck][ds];
 }
 
-/* ==============================
-   SETUP / CONNECT
-   ============================== */
 async function connectSupabase(){
   const url=document.getElementById('setup-url').value.trim();
   const key=document.getElementById('setup-key').value.trim();
   const errEl=document.getElementById('setup-error');
   errEl.style.display='none';
-  if(!url||!key){ showSetupError('URL と Anon Key を両方入力してください'); return; }
-  if(!url.startsWith('https://')){ showSetupError('URL は https:// から始まる必要があります'); return; }
-  SB_URL=url.replace(/\/$/,''); SB_KEY=key;
+  if(!url||!key){showSetupError('URL と Anon Key を両方入力してください');return}
+  if(!url.startsWith('https://')){showSetupError('URL は https:// から始まる必要があります');return}
+  SB_URL=url.replace(/\/$/,'');SB_KEY=key;
   try{
     const r=await fetch(`${SB_URL}/rest/v1/daily_reports?limit=1`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
     if(r.status===404||r.status===400){
       const b=await r.json().catch(()=>({}));
-      if(b.message&&b.message.includes('relation')){
-        showSetupError('テーブル "daily_reports" が見つかりません。\n以下のSQLをSupabase SQL Editorで実行してください：\n\n'+setupSQL());
-        return;
-      }
+      if(b.message&&b.message.includes('relation')){showSetupError('テーブル "daily_reports" が見つかりません。\n以下のSQLをSupabase SQL Editorで実行してください：\n\n'+setupSQL());return}
     }
-    if(!r.ok&&r.status!==200){ showSetupError(`接続エラー (HTTP ${r.status})`); return; }
-  }catch(e){ showSetupError('接続できません: '+e.message); return; }
-  saveConfig(url,key);
-  startApp();
+    if(!r.ok&&r.status!==200){showSetupError(`接続エラー (HTTP ${r.status})`);return}
+  }catch(e){showSetupError('接続できません: '+e.message);return}
+  saveConfig(url,key);startApp();
 }
-function showSetupError(msg){ const e=document.getElementById('setup-error'); e.textContent=msg; e.style.display='block'; }
+function showSetupError(msg){const e=document.getElementById('setup-error');e.textContent=msg;e.style.display='block'}
 function setupSQL(){
   return `create table daily_reports (
   id bigserial primary key,
@@ -525,196 +414,150 @@ function setupSQL(){
   next_plan text default '',
   memo text default '',
   submitted boolean default false,
+  is_holiday boolean default false,
   updated_at timestamptz default now(),
   unique(client_id, date_str)
-);`;
+);
+
+-- 既存テーブルに is_holiday カラムを追加する場合:
+-- alter table daily_reports add column if not exists is_holiday boolean default false;`;
 }
 
 async function startApp(){
   document.getElementById('setup-wrap').style.display='none';
   document.getElementById('app-shell').style.display='flex';
-  clients = loadClients();
-  renderClientList();
-  if(clients.length>0) await selectClient(clients[0]);
+  clients=loadClients();renderClientList();
+  if(clients.length>0)await selectClient(clients[0]);
 }
 
-/* ==============================
-   CLIENT MANAGEMENT
-   ============================== */
-let editingClientId = null;
-let selectedColor   = COLORS[0];
+let editingClientId=null,selectedColor=COLORS[0];
 
 function renderClientList(){
-  const ul=document.getElementById('client-list');
-  ul.innerHTML='';
-  if(clients.length===0){
-    ul.innerHTML='<div style="padding:16px 10px;font-size:12px;color:var(--text3);text-align:center">クライアントがいません<br>下のボタンで追加</div>';
-    return;
-  }
+  const ul=document.getElementById('client-list');ul.innerHTML='';
+  if(clients.length===0){ul.innerHTML='<div style="padding:16px 10px;font-size:12px;color:var(--text3);text-align:center">クライアントがいません<br>下のボタンで追加</div>';return}
   clients.forEach(c=>{
     const div=document.createElement('div');
     div.className='client-item'+(activeClient&&activeClient.id===c.id?' active':'');
-    // count reports this month
     const ck=cacheKey(c.id,curYear,curMonth);
-    const cnt=monthCache[ck]?Object.keys(monthCache[ck]).length:'';
-    div.innerHTML=`
-      <div class="client-avatar" style="background:${c.color}">${esc(c.abbr||c.name.slice(0,2))}</div>
-      <span class="client-name" title="${esc(c.name)}">${esc(c.name)}</span>
-      ${cnt?`<span class="client-count">${cnt}</span>`:''}
-    `;
-    div.onclick=()=>selectClient(c);
-    div.ondblclick=()=>openEditClient(c);
+    // ★ 休日を除いた件数
+    const cnt=monthCache[ck]?Object.values(monthCache[ck]).filter(r=>r&&!r.is_holiday).length:'';
+    div.innerHTML=`<div class="client-avatar" style="background:${c.color}">${esc(c.abbr||c.name.slice(0,2))}</div><span class="client-name" title="${esc(c.name)}">${esc(c.name)}</span>${cnt?`<span class="client-count">${cnt}</span>`:''}`;
+    div.onclick=()=>selectClient(c);div.ondblclick=()=>openEditClient(c);
     ul.appendChild(div);
   });
 }
 
 async function selectClient(c){
-  activeClient=c;
-  selectedDate=null;
-  renderClientList();
-  updateTopBar();
+  activeClient=c;selectedDate=null;renderClientList();updateTopBar();
   setSyncStatus('syncing','読み込み中...');
   await loadMonth(c.id,curYear,curMonth).catch(()=>{});
-  renderCalendar();
-  updateStats();
+  renderCalendar();updateStats();
   document.getElementById('form-area').innerHTML=`<div class="empty-state"><span class="empty-icon">📅</span><p>日付を選んで日報を記入</p></div>`;
-  // auto-select today if same month
-  if(curYear===now.getFullYear()&&curMonth===now.getMonth()) selectDate(todayStr);
+  if(curYear===now.getFullYear()&&curMonth===now.getMonth())selectDate(todayStr);
 }
 
 function updateTopBar(){
   const el=document.getElementById('top-bar-left');
-  if(!activeClient){ el.innerHTML='<div style="color:var(--text3);font-size:13px">クライアントを選択してください</div>'; return; }
+  if(!activeClient){el.innerHTML='<div style="color:var(--text3);font-size:13px">クライアントを選択してください</div>';return}
   const c=activeClient;
-  el.innerHTML=`
-    <div class="client-badge">
-      <div class="client-badge-avatar" style="background:${c.color}">${esc(c.abbr||c.name.slice(0,2))}</div>
-      <div>
-        <div class="client-badge-name">${esc(c.name)}</div>
-        <div class="client-badge-meta">${curYear}年 ${MO[curMonth]}</div>
-      </div>
-    </div>
-    <button class="btn btn-sm" style="margin-left:8px" onclick="openEditClient(activeClient)">✏ 編集</button>
-  `;
+  el.innerHTML=`<div class="client-badge"><div class="client-badge-avatar" style="background:${c.color}">${esc(c.abbr||c.name.slice(0,2))}</div><div><div class="client-badge-name">${esc(c.name)}</div><div class="client-badge-meta">${curYear}年 ${MO[curMonth]}</div></div></div><button class="btn btn-sm" style="margin-left:8px" onclick="openEditClient(activeClient)">✏ 編集</button>`;
 }
 
 function openAddClient(){
-  editingClientId=null; selectedColor=COLORS[0];
+  editingClientId=null;selectedColor=COLORS[0];
   document.getElementById('client-modal-title').textContent='クライアントを追加';
-  document.getElementById('cm-name').value='';
-  document.getElementById('cm-abbr').value='';
+  document.getElementById('cm-name').value='';document.getElementById('cm-abbr').value='';
   document.getElementById('cm-delete-btn').style.display='none';
-  renderSwatches();
-  document.getElementById('client-modal').classList.add('open');
+  renderSwatches();document.getElementById('client-modal').classList.add('open');
   setTimeout(()=>document.getElementById('cm-name').focus(),50);
 }
 function openEditClient(c){
-  editingClientId=c.id; selectedColor=c.color;
+  editingClientId=c.id;selectedColor=c.color;
   document.getElementById('client-modal-title').textContent='クライアントを編集';
-  document.getElementById('cm-name').value=c.name;
-  document.getElementById('cm-abbr').value=c.abbr||'';
+  document.getElementById('cm-name').value=c.name;document.getElementById('cm-abbr').value=c.abbr||'';
   document.getElementById('cm-delete-btn').style.display='inline-flex';
-  renderSwatches();
-  document.getElementById('client-modal').classList.add('open');
+  renderSwatches();document.getElementById('client-modal').classList.add('open');
 }
-function closeClientModal(){ document.getElementById('client-modal').classList.remove('open'); }
-
+function closeClientModal(){document.getElementById('client-modal').classList.remove('open')}
 function renderSwatches(){
-  const wrap=document.getElementById('color-swatches');
-  wrap.innerHTML='';
+  const wrap=document.getElementById('color-swatches');wrap.innerHTML='';
   COLORS.forEach(col=>{
     const s=document.createElement('div');
-    s.className='swatch'+(col===selectedColor?' selected':'');
-    s.style.background=col;
-    s.onclick=()=>{ selectedColor=col; renderSwatches(); };
-    wrap.appendChild(s);
+    s.className='swatch'+(col===selectedColor?' selected':'');s.style.background=col;
+    s.onclick=()=>{selectedColor=col;renderSwatches()};wrap.appendChild(s);
   });
 }
-
 function saveClient(){
   const name=document.getElementById('cm-name').value.trim();
   const abbr=document.getElementById('cm-abbr').value.trim();
-  if(!name){ alert('会社名を入力してください'); return; }
-  if(editingClientId){
-    const c=clients.find(c=>c.id===editingClientId);
-    if(c){ c.name=name; c.abbr=abbr||name.slice(0,2); c.color=selectedColor; }
-  }else{
-    clients.push({id:uid(),name,abbr:abbr||name.slice(0,2),color:selectedColor});
-  }
-  persistClients(); closeClientModal(); renderClientList(); updateTopBar();
+  if(!name){alert('会社名を入力してください');return}
+  if(editingClientId){const c=clients.find(c=>c.id===editingClientId);if(c){c.name=name;c.abbr=abbr||name.slice(0,2);c.color=selectedColor}}
+  else clients.push({id:uid(),name,abbr:abbr||name.slice(0,2),color:selectedColor});
+  persistClients();closeClientModal();renderClientList();updateTopBar();
   showToast(editingClientId?'クライアントを更新しました':'クライアントを追加しました');
 }
-
 async function deleteClient(){
-  const c=clients.find(c=>c.id===editingClientId);
-  if(!c) return;
-  if(!confirm(`「${c.name}」を削除しますか？\nSupabase 上の日報データは残ります。`)) return;
-  clients=clients.filter(cl=>cl.id!==editingClientId);
-  persistClients(); closeClientModal();
+  const c=clients.find(c=>c.id===editingClientId);if(!c)return;
+  if(!confirm(`「${c.name}」を削除しますか？\nSupabase 上の日報データは残ります。`))return;
+  clients=clients.filter(cl=>cl.id!==editingClientId);persistClients();closeClientModal();
   if(activeClient&&activeClient.id===editingClientId){
     activeClient=null;
     document.getElementById('form-area').innerHTML=`<div class="empty-state"><span class="empty-icon">👈</span><p>クライアントを選択してください</p></div>`;
     updateTopBar();
   }
-  renderClientList();
-  showToast('クライアントを削除しました');
+  renderClientList();showToast('クライアントを削除しました');
 }
 
-/* ==============================
-   CALENDAR
-   ============================== */
 function renderCalendar(){
   document.getElementById('cal-title').textContent=`${curYear}年 ${MO[curMonth]}`;
-  const grid=document.getElementById('cal-grid');
-  grid.innerHTML='';
-  DOW.forEach(d=>{ const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); });
-  const first=new Date(curYear,curMonth,1), last=new Date(curYear,curMonth+1,0);
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  DOW.forEach(d=>{const el=document.createElement('div');el.className='cal-dow';el.textContent=d;grid.appendChild(el)});
+  const first=new Date(curYear,curMonth,1),last=new Date(curYear,curMonth+1,0);
   const startDow=first.getDay();
-  for(let i=0;i<startDow;i++) addDay(grid,new Date(curYear,curMonth,1-startDow+i),true);
-  for(let d=1;d<=last.getDate();d++) addDay(grid,new Date(curYear,curMonth,d),false);
+  for(let i=0;i<startDow;i++)addDay(grid,new Date(curYear,curMonth,1-startDow+i),true);
+  for(let d=1;d<=last.getDate();d++)addDay(grid,new Date(curYear,curMonth,d),false);
   const rem=7-((startDow+last.getDate())%7);
-  if(rem<7) for(let i=1;i<=rem;i++) addDay(grid,new Date(curYear,curMonth+1,i),true);
+  if(rem<7)for(let i=1;i<=rem;i++)addDay(grid,new Date(curYear,curMonth+1,i),true);
 }
-
 function addDay(grid,dt,other){
-  const ds=fd(dt), el=document.createElement('div');
+  const ds=fd(dt),el=document.createElement('div');
   el.className='cal-day';
-  if(other) el.classList.add('other-month');
-  if(ds===todayStr) el.classList.add('today');
-  if(ds===selectedDate) el.classList.add('selected');
-  if(activeClient&&getCached(activeClient.id,ds)) el.classList.add('has-report');
+  if(other)el.classList.add('other-month');
+  if(ds===todayStr)el.classList.add('today');
+  if(ds===selectedDate)el.classList.add('selected');
+  const cached=activeClient?getCached(activeClient.id,ds):null;
+  if(cached)el.classList.add('has-report');
+  if(cached&&cached.is_holiday)el.classList.add('is-holiday'); // ★
   const dow=dt.getDay();
-  if(!other&&dow===0) el.classList.add('sunday');
-  if(!other&&dow===6) el.classList.add('saturday');
+  if(!other&&dow===0)el.classList.add('sunday');
+  if(!other&&dow===6)el.classList.add('saturday');
   el.textContent=dt.getDate();
-  el.onclick=()=>{ if(activeClient) selectDate(ds); };
+  el.onclick=()=>{if(activeClient)selectDate(ds)};
   grid.appendChild(el);
 }
-
 async function changeMonth(dir){
   curMonth+=dir;
-  if(curMonth>11){ curMonth=0; curYear++; }
-  if(curMonth<0){  curMonth=11; curYear--; }
-  selectedDate=null;
-  updateTopBar();
-  if(activeClient) await loadMonth(activeClient.id,curYear,curMonth).catch(()=>{});
-  renderCalendar(); updateStats();
+  if(curMonth>11){curMonth=0;curYear++}
+  if(curMonth<0){curMonth=11;curYear--}
+  selectedDate=null;updateTopBar();
+  if(activeClient)await loadMonth(activeClient.id,curYear,curMonth).catch(()=>{});
+  renderCalendar();updateStats();
   document.getElementById('form-area').innerHTML=`<div class="empty-state"><span class="empty-icon">📅</span><p>日付を選んで日報を記入</p></div>`;
   renderClientList();
 }
-
 function updateStats(){
-  if(!activeClient){ ['stat-count','stat-hours','stat-tasks'].forEach(id=>document.getElementById(id).textContent='—'); return; }
+  if(!activeClient){['stat-count','stat-hours','stat-tasks'].forEach(id=>document.getElementById(id).textContent='—');return}
   const ck=cacheKey(activeClient.id,curYear,curMonth);
   const map=monthCache[ck]||{};
   let count=0,mins=0,done=0;
   Object.values(map).forEach(r=>{
-    if(!r) return; count++;
+    if(!r||r.is_holiday)return; // ★ 休日除外
+    count++;
     if(r.time_start&&r.time_end){
-      const [sh,sm]=r.time_start.split(':').map(Number),[eh,em]=r.time_end.split(':').map(Number);
-      const d=eh*60+em-sh*60-sm; if(d>0) mins+=d;
+      const[sh,sm]=r.time_start.split(':').map(Number),[eh,em]=r.time_end.split(':').map(Number);
+      const d=eh*60+em-sh*60-sm;if(d>0)mins+=d;
     }
-    if(r.tasks) done+=r.tasks.filter(t=>t.done).length;
+    if(r.tasks)done+=r.tasks.filter(t=>t.done).length;
   });
   const h=Math.floor(mins/60),m2=mins%60;
   document.getElementById('stat-count').textContent=count;
@@ -722,12 +565,9 @@ function updateStats(){
   document.getElementById('stat-tasks').textContent=done;
 }
 
-/* ==============================
-   FORM
-   ============================== */
 async function selectDate(ds){
-  if(!activeClient) return;
-  selectedDate=ds; renderCalendar();
+  if(!activeClient)return;
+  selectedDate=ds;renderCalendar();
   const cached=getCached(activeClient.id,ds);
   renderForm(ds,cached);
   if(!cached){
@@ -735,80 +575,96 @@ async function selectDate(ds){
       setSyncStatus('syncing','読み込み中...');
       const row=await sbSelect(activeClient.id,ds);
       setSyncStatus('ok','Supabase 接続済');
-      if(row){ setCached(activeClient.id,ds,row); renderCalendar(); updateStats(); renderClientList(); if(selectedDate===ds) renderForm(ds,row); }
-    }catch(e){ setSyncStatus('error','読み込みエラー'); }
+      if(row){setCached(activeClient.id,ds,row);renderCalendar();updateStats();renderClientList();if(selectedDate===ds)renderForm(ds,row)}
+    }catch(e){setSyncStatus('error','読み込みエラー')}
   }
 }
 
 function renderForm(ds,row){
-  if(!activeClient) return;
+  if(!activeClient)return;
   const r=row?{
     title:row.title||'',client:row.client||activeClient.name,
     timeStart:row.time_start||'09:00',timeEnd:row.time_end||'18:00',
     tasks:row.tasks||[{text:'',done:false}],
     work:row.work||'',issue:row.issue||'',
-    next:row.next_plan||'',memo:row.memo||'',submitted:row.submitted||false
+    next:row.next_plan||'',memo:row.memo||'',
+    submitted:row.submitted||false,
+    isHoliday:row.is_holiday||false  // ★
   }:{
     title:'',client:activeClient.name,timeStart:'09:00',timeEnd:'18:00',
-    tasks:[{text:'',done:false}],work:'',issue:'',next:'',memo:'',submitted:false
+    tasks:[{text:'',done:false}],work:'',issue:'',next:'',memo:'',submitted:false,
+    isHoliday:false
   };
   tasks=r.tasks.map(t=>({...t}));
+
+  const holidayBanner=r.isHoliday
+    ?`<div class="holiday-banner"><span class="hb-icon">🏖</span>この日は休日に設定されています。月次PDFには含まれません。</div>`
+    :'';
+
   document.getElementById('form-area').innerHTML=`
     <div class="form-date-header">
       <div>
         <div class="form-date-label">${labelDate(ds)}</div>
-        <div class="form-date-sub" id="form-client-sub">${r.client||activeClient.name}</div>
+        <div class="form-date-sub" id="form-client-sub">${esc(r.client||activeClient.name)}</div>
       </div>
-      <span class="badge ${r.submitted?'badge-submitted':'badge-draft'}" id="status-badge">${r.submitted?'✓ 提出済':'下書き'}</span>
-    </div>
-    <div class="form-row">
-      <div class="form-section">
-        <label>タイトル</label>
-        <input type="text" id="f-title" value="${esc(r.title)}" placeholder="本日の業務タイトル">
-      </div>
-      <div class="form-section">
-        <label>クライアント名（PDF用）</label>
-        <input type="text" id="f-client" value="${esc(r.client)}" placeholder="${esc(activeClient.name)}"
-          oninput="document.getElementById('form-client-sub').textContent=this.value||activeClient.name">
-      </div>
-    </div>
-    <div class="form-section">
-      <label>作業時間</label>
-      <div class="time-row">
-        <input type="time" id="f-start" value="${esc(r.timeStart)}" oninput="calcHours()">
-        <span class="time-sep">〜</span>
-        <input type="time" id="f-end" value="${esc(r.timeEnd)}" oninput="calcHours()">
-        <span class="time-calc" id="time-calc"></span>
-      </div>
-    </div>
-    <div class="form-section">
-      <label>タスク一覧</label>
-      <ul class="task-list" id="task-list"></ul>
-      <div style="display:flex;gap:7px;margin-top:2px">
-        <button class="add-task-btn" style="flex:1" onclick="addTask()">＋ タスクを追加</button>
-        <button class="add-task-btn" id="btn-carryover" style="flex:1;color:var(--blue)"
-          onclick="carryOverTasks()" title="未完了タスクを翌日の日報に追加します">
-          📋 未完了を翌日へ持ち越し
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn btn-sm btn-holiday${r.isHoliday?' is-on':''}" id="btn-holiday" onclick="toggleHoliday()">
+          🏖 ${r.isHoliday?'休日を解除':'休日にする'}
         </button>
+        <span class="badge ${r.isHoliday?'badge-holiday':r.submitted?'badge-submitted':'badge-draft'}" id="status-badge">
+          ${r.isHoliday?'🏖 休日':r.submitted?'✓ 提出済':'下書き'}
+        </span>
       </div>
     </div>
-    <div class="form-section">
-      <label>作業内容・成果</label>
-      <textarea id="f-work" rows="4" placeholder="実施した作業の詳細、達成した成果...">${esc(r.work)}</textarea>
-    </div>
-    <div class="form-row">
+    ${holidayBanner}
+    <div class="work-fields">
+      <div class="form-row">
+        <div class="form-section">
+          <label>タイトル</label>
+          <input type="text" id="f-title" value="${esc(r.title)}" placeholder="本日の業務タイトル">
+        </div>
+        <div class="form-section">
+          <label>クライアント名（PDF用）</label>
+          <input type="text" id="f-client" value="${esc(r.client)}" placeholder="${esc(activeClient.name)}"
+            oninput="document.getElementById('form-client-sub').textContent=this.value||activeClient.name">
+        </div>
+      </div>
       <div class="form-section">
-        <label>課題・問題点</label>
-        <textarea id="f-issue" rows="3" placeholder="発生した問題・懸念事項...">${esc(r.issue)}</textarea>
+        <label>作業時間</label>
+        <div class="time-row">
+          <input type="time" id="f-start" value="${esc(r.timeStart)}" oninput="calcHours()">
+          <span class="time-sep">〜</span>
+          <input type="time" id="f-end" value="${esc(r.timeEnd)}" oninput="calcHours()">
+          <span class="time-calc" id="time-calc"></span>
+        </div>
       </div>
       <div class="form-section">
-        <label>翌日の予定</label>
-        <textarea id="f-next" rows="3" placeholder="明日実施予定の作業...">${esc(r.next)}</textarea>
+        <label>タスク一覧</label>
+        <ul class="task-list" id="task-list"></ul>
+        <div style="display:flex;gap:7px;margin-top:2px">
+          <button class="add-task-btn" style="flex:1" onclick="addTask()">＋ タスクを追加</button>
+          <button class="add-task-btn" id="btn-carryover" style="flex:1;color:var(--blue)"
+            onclick="carryOverTasks()" title="未完了タスクを翌日の日報に追加します">📋 未完了を翌日へ持ち越し</button>
+        </div>
       </div>
-    </div>
-    <div class="form-section">
-      <label>連絡事項・メモ</label>
-      <textarea id="f-memo" rows="2" placeholder="クライアントへの連絡事項など...">${esc(r.memo)}</textarea>
+      <div class="form-section">
+        <label>作業内容・成果</label>
+        <textarea id="f-work" rows="4" placeholder="実施した作業の詳細、達成した成果...">${esc(r.work)}</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-section">
+          <label>課題・問題点</label>
+          <textarea id="f-issue" rows="3" placeholder="発生した問題・懸念事項...">${esc(r.issue)}</textarea>
+        </div>
+        <div class="form-section">
+          <label>翌日の予定</label>
+          <textarea id="f-next" rows="3" placeholder="明日実施予定の作業...">${esc(r.next)}</textarea>
+        </div>
+      </div>
+      <div class="form-section">
+        <label>連絡事項・メモ</label>
+        <textarea id="f-memo" rows="2" placeholder="クライアントへの連絡事項など...">${esc(r.memo)}</textarea>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn btn-sm btn-danger" onclick="openDeleteModal()">🗑 削除</button>
@@ -817,314 +673,223 @@ function renderForm(ds,row){
       <button class="btn btn-sm btn-primary" onclick="doSave(true)" id="btn-submit">✓ 確定・提出済</button>
     </div>
   `;
-  renderTasks(); calcHours();
+  const fa=document.getElementById('form-area');
+  fa.classList.toggle('holiday-mode',r.isHoliday);
+  renderTasks();calcHours();
 }
 
-function renderTasks(){
-  const ul=document.getElementById('task-list'); if(!ul) return;
-  ul.innerHTML='';
-  tasks.forEach((t,i)=>{
-    const li=document.createElement('li');
-    li.className='task-item'+(t.done?' done-item':'');
-    li.innerHTML=`
-      <input type="checkbox" class="task-cb" ${t.done?'checked':''}
-        onchange="tasks[${i}].done=this.checked;this.closest('li').classList.toggle('done-item',this.checked)">
-      <input type="text" class="task-txt" value="${esc(t.text)}" placeholder="タスク内容"
-        oninput="tasks[${i}].text=this.value" ${t.done?'style="text-decoration:line-through;color:var(--text3)"':''}>
-      <button class="task-del" onclick="removeTask(${i})">×</button>`;
-    ul.appendChild(li);
-  });
+// ★ 休日トグル
+function toggleHoliday(){
+  if(!selectedDate||!activeClient)return;
+  const btn=document.getElementById('btn-holiday');
+  const badge=document.getElementById('status-badge');
+  const fa=document.getElementById('form-area');
+  const newHoliday=!btn.classList.contains('is-on');
+
+  btn.classList.toggle('is-on',newHoliday);
+  btn.textContent=`🏖 ${newHoliday?'休日を解除':'休日にする'}`;
+  badge.className=`badge ${newHoliday?'badge-holiday':'badge-draft'}`;
+  badge.textContent=newHoliday?'🏖 休日':'下書き';
+  fa.classList.toggle('holiday-mode',newHoliday);
+
+  // バナー挿入/削除
+  const existing=document.querySelector('.holiday-banner');
+  if(newHoliday&&!existing){
+    const div=document.createElement('div');
+    div.className='holiday-banner';
+    div.innerHTML='<span class="hb-icon">🏖</span>この日は休日に設定されています。月次PDFには含まれません。';
+    const header=document.querySelector('.form-date-header');
+    if(header)header.insertAdjacentElement('afterend',div);
+  }else if(!newHoliday&&existing){
+    existing.remove();
+  }
+  autoSaveHoliday(newHoliday);
 }
-function addTask(){ tasks.push({text:'',done:false}); renderTasks(); const ins=document.querySelectorAll('.task-txt'); if(ins.length) ins[ins.length-1].focus(); }
-function removeTask(i){ tasks.splice(i,1); renderTasks(); }
 
-// 翌日（土日を除く翌営業日ではなく、単純に+1日）の日付文字列を返す
-function nextDateStr(ds){
-  const dt=parseDate(ds);
-  dt.setDate(dt.getDate()+1);
-  return fd(dt);
-}
-
-// 未完了タスクを翌日の日報に持ち越す
-async function carryOverTasks(){
-  if(!selectedDate||!activeClient) return;
-  const pending=tasks.filter(t=>t.text&&!t.done);
-  if(pending.length===0){ showToast('未完了のタスクがありません'); return; }
-
-  const nextDs=nextDateStr(selectedDate);
-  const nextLabel=labelDate(nextDs);
-
-  if(!confirm(`未完了タスク ${pending.length}件 を\n${nextLabel}\nの日報に追加しますか？`)) return;
-
-  const btn=document.getElementById('btn-carryover');
-  if(btn){ btn.disabled=true; btn.textContent='処理中...'; }
-
+async function autoSaveHoliday(isHoliday){
+  if(!selectedDate||!activeClient)return;
+  setSyncStatus('syncing','保存中...');
   try{
-    // 翌日の既存データを取得（なければ新規）
-    setSyncStatus('syncing','読み込み中...');
-    let nextRow=getCached(activeClient.id,nextDs);
-    if(!nextRow){
-      nextRow=await sbSelect(activeClient.id,nextDs).catch(()=>null);
-    }
-    // 翌日のタスクリストに未完了タスクをマージ（テキスト重複は追加しない）
-    const existingTexts=new Set((nextRow?.tasks||[]).map(t=>t.text));
-    const toAdd=pending.filter(t=>!existingTexts.has(t.text)).map(t=>({text:t.text,done:false}));
-    if(toAdd.length===0){ showToast('翌日にすでに同じタスクが存在します'); return; }
-
-    const mergedTasks=[...(nextRow?.tasks||[]),...toAdd];
-    const nextData={
-      client_id: activeClient.id,
-      date_str: nextDs,
-      title:     nextRow?.title||'',
-      client:    nextRow?.client||activeClient.name,
-      time_start:nextRow?.time_start||'09:00',
-      time_end:  nextRow?.time_end||'18:00',
-      tasks:     mergedTasks,
-      work:      nextRow?.work||'',
-      issue:     nextRow?.issue||'',
-      next_plan: nextRow?.next_plan||'',
-      memo:      nextRow?.memo||'',
-      submitted: nextRow?.submitted||false,
-      updated_at:new Date().toISOString()
-    };
-
-    await sbUpsert(nextData);
-    setCached(activeClient.id,nextDs,nextData);
+    const data=collectForm(false);
+    data.is_holiday=isHoliday;
+    if(isHoliday)data.submitted=false;
+    await sbUpsert(data);
+    setCached(activeClient.id,selectedDate,data);
     setSyncStatus('ok','Supabase 接続済');
-    renderCalendar(); updateStats(); renderClientList();
-    showToast(`✓ ${toAdd.length}件のタスクを ${nextLabel} に持ち越しました`);
+    renderCalendar();updateStats();renderClientList();
+    showToast(isHoliday?'🏖 休日に設定しました':'📋 稼働日に戻しました');
   }catch(e){
-    setSyncStatus('error','エラー');
-    showToast('❌ 持ち越し失敗: '+e.message);
-  }finally{
-    if(btn){ btn.disabled=false; btn.textContent='📋 未完了を翌日へ持ち越し'; }
+    setSyncStatus('error','保存エラー');
+    showToast('❌ 保存失敗: '+e.message);
   }
 }
 
+function renderTasks(){
+  const ul=document.getElementById('task-list');if(!ul)return;ul.innerHTML='';
+  tasks.forEach((t,i)=>{
+    const li=document.createElement('li');
+    li.className='task-item'+(t.done?' done-item':'');
+    li.innerHTML=`<input type="checkbox" class="task-cb" ${t.done?'checked':''} onchange="tasks[${i}].done=this.checked;this.closest('li').classList.toggle('done-item',this.checked)"><input type="text" class="task-txt" value="${esc(t.text)}" placeholder="タスク内容" oninput="tasks[${i}].text=this.value" ${t.done?'style="text-decoration:line-through;color:var(--text3)"':''}><button class="task-del" onclick="removeTask(${i})">&#215;</button>`;
+    ul.appendChild(li);
+  });
+}
+function addTask(){tasks.push({text:'',done:false});renderTasks();const ins=document.querySelectorAll('.task-txt');if(ins.length)ins[ins.length-1].focus()}
+function removeTask(i){tasks.splice(i,1);renderTasks()}
+
+function nextDateStr(ds){const dt=parseDate(ds);dt.setDate(dt.getDate()+1);return fd(dt)}
+async function carryOverTasks(){
+  if(!selectedDate||!activeClient)return;
+  const pending=tasks.filter(t=>t.text&&!t.done);
+  if(pending.length===0){showToast('未完了のタスクがありません');return}
+  const nextDs=nextDateStr(selectedDate);
+  if(!confirm(`未完了タスク ${pending.length}件 を\n${labelDate(nextDs)}\nの日報に追加しますか？`))return;
+  const btn=document.getElementById('btn-carryover');
+  if(btn){btn.disabled=true;btn.textContent='処理中...'}
+  try{
+    setSyncStatus('syncing','読み込み中...');
+    let nextRow=getCached(activeClient.id,nextDs);
+    if(!nextRow)nextRow=await sbSelect(activeClient.id,nextDs).catch(()=>null);
+    const existingTexts=new Set((nextRow?.tasks||[]).map(t=>t.text));
+    const toAdd=pending.filter(t=>!existingTexts.has(t.text)).map(t=>({text:t.text,done:false}));
+    if(toAdd.length===0){showToast('翌日にすでに同じタスクが存在します');return}
+    const mergedTasks=[...(nextRow?.tasks||[]),...toAdd];
+    const nextData={client_id:activeClient.id,date_str:nextDs,title:nextRow?.title||'',client:nextRow?.client||activeClient.name,time_start:nextRow?.time_start||'09:00',time_end:nextRow?.time_end||'18:00',tasks:mergedTasks,work:nextRow?.work||'',issue:nextRow?.issue||'',next_plan:nextRow?.next_plan||'',memo:nextRow?.memo||'',submitted:nextRow?.submitted||false,is_holiday:nextRow?.is_holiday||false,updated_at:new Date().toISOString()};
+    await sbUpsert(nextData);setCached(activeClient.id,nextDs,nextData);
+    setSyncStatus('ok','Supabase 接続済');renderCalendar();updateStats();renderClientList();
+    showToast(`✓ ${toAdd.length}件のタスクを ${labelDate(nextDs)} に持ち越しました`);
+  }catch(e){setSyncStatus('error','エラー');showToast('❌ 持ち越し失敗: '+e.message)}
+  finally{if(btn){btn.disabled=false;btn.textContent='📋 未完了を翌日へ持ち越し'}}
+}
+
 function calcHours(){
-  const s=document.getElementById('f-start')?.value, e=document.getElementById('f-end')?.value;
-  const el=document.getElementById('time-calc'); if(!s||!e||!el) return;
-  const [sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);
+  const s=document.getElementById('f-start')?.value,e=document.getElementById('f-end')?.value;
+  const el=document.getElementById('time-calc');if(!s||!e||!el)return;
+  const[sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);
   const mins=eh*60+em-sh*60-sm;
-  el.textContent=mins>0?`${Math.floor(mins/60)}時間${mins%60?mins%60+'分':''}` : '';
+  el.textContent=mins>0?`${Math.floor(mins/60)}時間${mins%60?mins%60+'分':''}`:''
 }
 
 function collectForm(submitted){
-  return {
-    client_id: activeClient.id,
-    date_str: selectedDate,
-    title:      document.getElementById('f-title')?.value||'',
-    client:     document.getElementById('f-client')?.value||activeClient.name,
-    time_start: document.getElementById('f-start')?.value||'',
-    time_end:   document.getElementById('f-end')?.value||'',
-    tasks:      tasks.map(t=>({...t})),
-    work:       document.getElementById('f-work')?.value||'',
-    issue:      document.getElementById('f-issue')?.value||'',
-    next_plan:  document.getElementById('f-next')?.value||'',
-    memo:       document.getElementById('f-memo')?.value||'',
-    submitted,
-    updated_at: new Date().toISOString()
+  const isHoliday=document.getElementById('btn-holiday')?.classList.contains('is-on')||false;
+  return{
+    client_id:activeClient.id,date_str:selectedDate,
+    title:document.getElementById('f-title')?.value||'',
+    client:document.getElementById('f-client')?.value||activeClient.name,
+    time_start:document.getElementById('f-start')?.value||'',
+    time_end:document.getElementById('f-end')?.value||'',
+    tasks:tasks.map(t=>({...t})),
+    work:document.getElementById('f-work')?.value||'',
+    issue:document.getElementById('f-issue')?.value||'',
+    next_plan:document.getElementById('f-next')?.value||'',
+    memo:document.getElementById('f-memo')?.value||'',
+    submitted,is_holiday:isHoliday,updated_at:new Date().toISOString()
   };
 }
 
 async function doSave(submitted){
-  if(!selectedDate||!activeClient) return;
+  if(!selectedDate||!activeClient)return;
   const btnId=submitted?'btn-submit':'btn-draft';
   const btn=document.getElementById(btnId);
-  if(btn){ btn.disabled=true; btn.textContent='保存中...'; }
+  if(btn){btn.disabled=true;btn.textContent='保存中...'}
   setSyncStatus('syncing','保存中...');
   try{
     const data=collectForm(submitted);
-    await sbUpsert(data);
-    setCached(activeClient.id,selectedDate,data);
-    setSyncStatus('ok','Supabase 接続済');
-    renderCalendar(); updateStats(); renderClientList();
+    await sbUpsert(data);setCached(activeClient.id,selectedDate,data);
+    setSyncStatus('ok','Supabase 接続済');renderCalendar();updateStats();renderClientList();
     const badge=document.getElementById('status-badge');
-    if(badge){ badge.className=`badge ${submitted?'badge-submitted':'badge-draft'}`; badge.textContent=submitted?'✓ 提出済':'下書き'; }
+    if(badge){
+      badge.className=`badge ${data.is_holiday?'badge-holiday':submitted?'badge-submitted':'badge-draft'}`;
+      badge.textContent=data.is_holiday?'🏖 休日':submitted?'✓ 提出済':'下書き';
+    }
     showToast(submitted?'✓ 提出済として保存しました':'💾 下書きを保存しました');
-  }catch(e){ setSyncStatus('error','保存エラー'); showToast('❌ 保存失敗: '+e.message); }
-  finally{
-    if(btn){ btn.disabled=false; btn.textContent=submitted?'✓ 確定・提出済':'💾 下書き保存'; }
-  }
+  }catch(e){setSyncStatus('error','保存エラー');showToast('❌ 保存失敗: '+e.message)}
+  finally{if(btn){btn.disabled=false;btn.textContent=submitted?'✓ 確定・提出済':'💾 下書き保存'}}
 }
 
 let deleteTarget=null;
-function openDeleteModal(){ deleteTarget=selectedDate; document.getElementById('delete-modal').classList.add('open'); }
-function closeDeleteModal(){ document.getElementById('delete-modal').classList.remove('open'); deleteTarget=null; }
+function openDeleteModal(){deleteTarget=selectedDate;document.getElementById('delete-modal').classList.add('open')}
+function closeDeleteModal(){document.getElementById('delete-modal').classList.remove('open');deleteTarget=null}
 async function confirmDelete(){
-  if(!deleteTarget||!activeClient) return;
-  closeDeleteModal();
-  setSyncStatus('syncing','削除中...');
+  if(!deleteTarget||!activeClient)return;
+  closeDeleteModal();setSyncStatus('syncing','削除中...');
   try{
-    await sbDelete(activeClient.id,deleteTarget);
-    delCached(activeClient.id,deleteTarget);
-    setSyncStatus('ok','Supabase 接続済');
-    selectedDate=null; renderCalendar(); updateStats(); renderClientList();
+    await sbDelete(activeClient.id,deleteTarget);delCached(activeClient.id,deleteTarget);
+    setSyncStatus('ok','Supabase 接続済');selectedDate=null;renderCalendar();updateStats();renderClientList();
     document.getElementById('form-area').innerHTML=`<div class="empty-state"><span class="empty-icon">🗑</span><p>削除しました</p></div>`;
     showToast('削除しました');
-  }catch(e){ setSyncStatus('error','削除エラー'); showToast('❌ 削除失敗'); }
+  }catch(e){setSyncStatus('error','削除エラー');showToast('❌ 削除失敗')}
 }
 
-/* ==============================
-   PDF / PRINT
-   ============================== */
-
-// 共通CSS（印刷用別ウィンドウ）
 function printCSS(accentColor){
-  return `
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;
-     font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}
-h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;
-   border-bottom:2px solid ${accentColor}}
-h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}
-.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;
-        page-break-inside:avoid}
-.report:last-child{border-bottom:none}
-.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;
-          margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}
-.r-date{font-size:11.5pt;font-weight:bold}
-.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}
-.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}
-.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;
-      font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}
-.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;
-        font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}
-.sec{margin-bottom:4mm;page-break-inside:avoid}
-.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;
-        border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;
-        margin-bottom:2mm;letter-spacing:.05em}
-/* ★ テキストは <div> で展開 — 高さ制限なし、全文表示 */
-.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;
-      line-height:1.8;min-height:1em}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}
-.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}
-.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;
-    display:inline-flex;align-items:center;justify-content:center;
-    font-size:8pt;color:#1D9E75;margin-top:1.5pt}
-@media print{body{padding:12mm 15mm}}
-  `;
+  return `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${accentColor}}h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;page-break-inside:avoid}.report:last-child{border-bottom:none}.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}.r-date{font-size:11.5pt;font-weight:bold}.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.sec{margin-bottom:4mm;page-break-inside:avoid}.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;margin-bottom:2mm;letter-spacing:.05em}.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;line-height:1.8;min-height:1em}.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;color:#1D9E75;margin-top:1.5pt}@media print{body{padding:12mm 15mm}}`;
 }
-
-// 1件分のレポートHTML（<div>ベース — textareaを使わない）
-function buildReportHTML(r, clientName){
+function buildReportHTML(r,clientName){
   let mins=0;
   if(r.time_start&&r.time_end){
-    const [sh,sm]=r.time_start.split(':').map(Number),[eh,em]=r.time_end.split(':').map(Number);
+    const[sh,sm]=r.time_start.split(':').map(Number),[eh,em]=r.time_end.split(':').map(Number);
     mins=Math.max(0,eh*60+em-sh*60-sm);
   }
   const hh=Math.floor(mins/60),mm2=mins%60;
   const tl=mins>0?`${r.time_start}〜${r.time_end}（${hh}時間${mm2?mm2+'分':''}）`:`${r.time_start||''}〜${r.time_end||''}`;
   const dt=parseDate(r.date_str);
   const dl=`${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${DOW[dt.getDay()]}）${r.title?' — '+sh(r.title):''}`;
-  let html=`<div class="report">
-    <div class="r-header">
-      <div>
-        <div class="r-date">${dl}</div>
-        <div class="r-client">${sh(r.client||clientName)}</div>
-      </div>
-      <div style="text-align:right">
-        <div class="r-time">${sh(tl)}</div>
-        <span class="${r.submitted?'bsub':'bdraft'}">${r.submitted?'✓ 提出済':'下書き'}</span>
-      </div>
-    </div>`;
+  let html=`<div class="report"><div class="r-header"><div><div class="r-date">${dl}</div><div class="r-client">${sh(r.client||clientName)}</div></div><div style="text-align:right"><div class="r-time">${sh(tl)}</div><span class="${r.submitted?'bsub':'bdraft'}">${r.submitted?'✓ 提出済':'下書き'}</span></div></div>`;
   const vt=(r.tasks||[]).filter(t=>t.text);
-  if(vt.length){
-    html+=`<div class="sec"><div class="slabel">タスク</div>`;
-    vt.forEach(t=>{ html+=`<div class="tr"><div class="tc">${t.done?'✓':''}</div><div>${sh(t.text)}</div></div>`; });
-    html+=`</div>`;
-  }
-  // ★ textareaの代わりに <div class="sval"> で全文展開
-  if(r.work) html+=`<div class="sec"><div class="slabel">作業内容・成果</div><div class="sval">${sh(r.work)}</div></div>`;
+  if(vt.length){html+=`<div class="sec"><div class="slabel">タスク</div>`;vt.forEach(t=>{html+=`<div class="tr"><div class="tc">${t.done?'✓':''}</div><div>${sh(t.text)}</div></div>`});html+=`</div>`}
+  if(r.work)html+=`<div class="sec"><div class="slabel">作業内容・成果</div><div class="sval">${sh(r.work)}</div></div>`;
   if(r.issue||r.next_plan){
     html+=`<div class="g2">`;
-    if(r.issue)     html+=`<div class="sec"><div class="slabel">課題・問題点</div><div class="sval">${sh(r.issue)}</div></div>`;
-    if(r.next_plan) html+=`<div class="sec"><div class="slabel">翌日の予定</div><div class="sval">${sh(r.next_plan)}</div></div>`;
+    if(r.issue)html+=`<div class="sec"><div class="slabel">課題・問題点</div><div class="sval">${sh(r.issue)}</div></div>`;
+    if(r.next_plan)html+=`<div class="sec"><div class="slabel">翌日の予定</div><div class="sval">${sh(r.next_plan)}</div></div>`;
     html+=`</div>`;
   }
-  if(r.memo) html+=`<div class="sec"><div class="slabel">連絡事項</div><div class="sval">${sh(r.memo)}</div></div>`;
+  if(r.memo)html+=`<div class="sec"><div class="slabel">連絡事項</div><div class="sval">${sh(r.memo)}</div></div>`;
   html+=`</div>`;
-  return { html, mins, doneTasks: vt.filter(t=>t.done).length };
+  return{html,mins,doneTasks:vt.filter(t=>t.done).length};
 }
 
-// 1日分の印刷
 async function printCurrent(){
-  if(!selectedDate){ alert('日付を選択してください'); return; }
-  if(!activeClient) return;
-  // 最新データを取得（未保存の場合はキャッシュ or フォームから読む）
-  let row = getCached(activeClient.id, selectedDate);
+  if(!selectedDate){alert('日付を選択してください');return}
+  if(!activeClient)return;
+  let row=getCached(activeClient.id,selectedDate);
+  if(!row)try{row=await sbSelect(activeClient.id,selectedDate)}catch(e){}
   if(!row){
-    try{ row = await sbSelect(activeClient.id, selectedDate); }catch(e){}
+    row={date_str:selectedDate,title:document.getElementById('f-title')?.value||'',client:document.getElementById('f-client')?.value||activeClient.name,time_start:document.getElementById('f-start')?.value||'',time_end:document.getElementById('f-end')?.value||'',tasks:tasks.map(t=>({...t})),work:document.getElementById('f-work')?.value||'',issue:document.getElementById('f-issue')?.value||'',next_plan:document.getElementById('f-next')?.value||'',memo:document.getElementById('f-memo')?.value||'',submitted:false,is_holiday:false};
   }
-  if(!row){
-    // フォームの内容をそのまま使う（未保存でも印刷可能）
-    row = {
-      date_str: selectedDate,
-      title:      document.getElementById('f-title')?.value||'',
-      client:     document.getElementById('f-client')?.value||activeClient.name,
-      time_start: document.getElementById('f-start')?.value||'',
-      time_end:   document.getElementById('f-end')?.value||'',
-      tasks:      tasks.map(t=>({...t})),
-      work:       document.getElementById('f-work')?.value||'',
-      issue:      document.getElementById('f-issue')?.value||'',
-      next_plan:  document.getElementById('f-next')?.value||'',
-      memo:       document.getElementById('f-memo')?.value||'',
-      submitted:  false
-    };
-  }
-  const { html } = buildReportHTML(row, activeClient.name);
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
-    <title>${activeClient.name} ${labelDate(selectedDate)} 業務日報</title>
-    <style>${printCSS(activeClient.color)}</style></head>
-    <body>${html}</body></html>`);
-  win.document.close();
-  setTimeout(()=>win.print(), 400);
+  const{html}=buildReportHTML(row,activeClient.name);
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${labelDate(selectedDate)} 業務日報</title><style>${printCSS(activeClient.color)}</style></head><body>${html}</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),400);
 }
 
-// 月次PDF
 async function exportMonthPDF(){
-  if(!activeClient){ alert('クライアントを選択してください'); return; }
+  if(!activeClient){alert('クライアントを選択してください');return}
   setSyncStatus('syncing','取得中...');
   let reports;
-  try{ reports=await sbSelectMonth(activeClient.id,curYear,curMonth); setSyncStatus('ok','Supabase 接続済'); }
-  catch(e){ setSyncStatus('error','エラー'); alert('取得失敗: '+e.message); return; }
-  if(!reports.length){ alert('今月の日報がありません'); return; }
+  try{reports=await sbSelectMonth(activeClient.id,curYear,curMonth);setSyncStatus('ok','Supabase 接続済')}
+  catch(e){setSyncStatus('error','エラー');alert('取得失敗: '+e.message);return}
 
-  let body='', totalMins=0, doneTasks=0;
-  reports.forEach(r=>{
-    const res = buildReportHTML(r, activeClient.name);
-    body += res.html;
-    totalMins += res.mins;
-    doneTasks += res.doneTasks;
+  // ★ 休日を除外
+  const workReports=reports.filter(r=>!r.is_holiday);
+  if(!workReports.length){alert('今月の稼働日報がありません（すべて休日か、日報がありません）');return}
+
+  let body='',totalMins=0,doneTasks=0;
+  workReports.forEach(r=>{
+    const res=buildReportHTML(r,activeClient.name);
+    body+=res.html;totalMins+=res.mins;doneTasks+=res.doneTasks;
   });
-
   const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
-    <title>${activeClient.name} ${curYear}年${MO[curMonth]} 業務日報</title>
-    <style>${printCSS(activeClient.color)}</style></head>
-    <body>
-      <h1>${sh(activeClient.name)}</h1>
-      <h2>${curYear}年${MO[curMonth]}　業務日報　／　${reports.length}件・稼働${Math.floor(totalMins/60)}時間・完了タスク${doneTasks}件</h2>
-      ${body}
-    </body></html>`);
-  win.document.close();
-  setTimeout(()=>win.print(), 600);
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${curYear}年${MO[curMonth]} 業務日報</title><style>${printCSS(activeClient.color)}</style></head><body><h1>${sh(activeClient.name)}</h1><h2>${curYear}年${MO[curMonth]}　業務日報　／　${workReports.length}件・稼働${Math.floor(totalMins/60)}時間・完了タスク${doneTasks}件</h2>${body}</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),600);
 }
 
-/* ==============================
-   KEYBOARD
-   ============================== */
 document.addEventListener('keydown',e=>{
-  if((e.metaKey||e.ctrlKey)&&e.key==='s'){ e.preventDefault(); if(selectedDate&&activeClient) doSave(false); }
+  if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();if(selectedDate&&activeClient)doSave(false)}
 });
 
-/* ==============================
-   INIT
-   ============================== */
 const cfg=loadConfig();
-if(cfg&&cfg.url&&cfg.key){ SB_URL=cfg.url; SB_KEY=cfg.key; startApp(); }
-else{ document.getElementById('setup-wrap').style.display='flex'; }
+if(cfg&&cfg.url&&cfg.key){SB_URL=cfg.url;SB_KEY=cfg.key;startApp()}
+else{document.getElementById('setup-wrap').style.display='flex'}
 </script>
 </body>
 </html>
