@@ -72,7 +72,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .btn-primary:hover:not(:disabled){background:#0F6E56;border-color:#0F6E56}
 .btn-danger{background:var(--red-light);border-color:#F0997B;color:var(--red)}
 .btn-danger:hover{background:#F5C4B3}
-/* ★ 休日ボタン */
 .btn-holiday{background:var(--holiday-light);border-color:#C8C4F0;color:var(--holiday)}
 .btn-holiday:hover:not(:disabled){background:#DDD9F7}
 .btn-holiday.is-on{background:var(--holiday);border-color:var(--holiday);color:#fff}
@@ -97,7 +96,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .cal-day.selected.has-report::after{background:rgba(255,255,255,0.7)}
 .cal-day.sunday:not(.other-month){color:#D85A30}
 .cal-day.saturday:not(.other-month){color:#185FA5}
-/* ★ 休日セル */
 .cal-day.is-holiday:not(.other-month){background:var(--holiday-light)!important;color:var(--holiday)!important;border-color:#C8C4F0!important}
 .cal-day.is-holiday.selected{background:var(--holiday)!important;border-color:var(--holiday)!important}
 .cal-day.is-holiday::after{background:var(--holiday)!important}
@@ -114,9 +112,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .badge-submitted{background:var(--accent-light);color:var(--accent-text)}
 .badge-draft{background:var(--amber-light);color:var(--amber)}
 .badge-holiday{background:var(--holiday-light);color:var(--holiday)}
-/* ★ 休日モード */
 .form-card.holiday-mode .work-fields{opacity:0.35;pointer-events:none;user-select:none}
-/* ★ 休日バナー */
 .holiday-banner{background:var(--holiday-light);border:1px solid #C8C4F0;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--holiday);font-size:13px;font-weight:600}
 .holiday-banner .hb-icon{font-size:20px}
 .form-section{margin-bottom:14px}
@@ -159,9 +155,51 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .swatch.selected{border-color:var(--text);transform:scale(1.1)}
 .toast{position:fixed;bottom:24px;right:24px;background:#1A1A18;color:#fff;padding:10px 17px;border-radius:8px;font-size:12.5px;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.18)}
 .toast.show{opacity:1}
+
+/* ===== 画像添付UI ===== */
+.img-drop-zone{
+  border:2px dashed var(--border2);border-radius:8px;padding:16px;
+  text-align:center;cursor:pointer;transition:all 0.15s;
+  color:var(--text3);font-size:12.5px;position:relative;
+  background:var(--bg);
+}
+.img-drop-zone:hover,.img-drop-zone.drag-over{
+  border-color:var(--accent);background:var(--accent-light);color:var(--accent-text);
+}
+.img-drop-zone input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.img-drop-zone .dz-icon{font-size:22px;display:block;margin-bottom:4px}
+.img-drop-zone .dz-hint{font-size:11px;color:var(--text3);margin-top:2px}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:8px}
+.img-thumb{position:relative;border-radius:7px;overflow:hidden;border:1px solid var(--border);background:var(--bg);aspect-ratio:1}
+.img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.img-thumb .img-del{
+  position:absolute;top:3px;right:3px;
+  background:rgba(0,0,0,0.55);color:#fff;border:none;
+  border-radius:50%;width:20px;height:20px;font-size:13px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  line-height:1;opacity:0;transition:opacity 0.15s;
+}
+.img-thumb:hover .img-del{opacity:1}
+.img-thumb .img-uploading{
+  position:absolute;inset:0;background:rgba(255,255,255,0.75);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--accent);font-weight:600;
+}
+.img-count{font-size:11px;color:var(--text3);margin-bottom:6px}
+
+/* 画像ライトボックス */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:center;justify-content:center}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 60px rgba(0,0,0,0.5)}
+.lightbox-close{position:absolute;top:18px;right:22px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:0.8}
+.lightbox-close:hover{opacity:1}
+
 @media print{
   .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,
-  .cal-nav-btn,.sidebar-footer,.modal-overlay,.toast{display:none!important}
+  .cal-nav-btn,.sidebar-footer,.modal-overlay,.toast,
+  .img-drop-zone,.img-del,.img-count{display:none!important}
   html,body{height:auto!important;overflow:visible!important}
   .app-shell{display:block!important;height:auto!important;overflow:visible!important}
   .main-content{overflow:visible!important;height:auto!important}
@@ -175,6 +213,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .form-row{height:auto!important;overflow:visible!important}
   .task-item{border:none!important;background:transparent!important;padding:2px 0!important}
   .form-section{page-break-inside:avoid}
+  /* 印刷時の画像グリッド */
+  .img-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px!important}
+  .img-thumb{page-break-inside:avoid;border:1px solid #ccc!important}
 }
 </style>
 </head>
@@ -255,6 +296,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
+<!-- クライアント編集モーダル -->
 <div class="modal-overlay" id="client-modal">
   <div class="modal">
     <h3 id="client-modal-title">クライアントを追加</h3>
@@ -278,15 +320,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
+<!-- 削除確認モーダル -->
 <div class="modal-overlay" id="delete-modal">
   <div class="modal">
     <h3>⚠️ 日報を削除しますか？</h3>
-    <p>この操作は取り消せません。<br>Supabase 上のデータも削除されます。</p>
+    <p>この操作は取り消せません。<br>Supabase 上のデータ・画像も削除されます。</p>
     <div class="modal-actions">
       <button class="btn btn-sm" onclick="closeDeleteModal()">キャンセル</button>
       <button class="btn btn-sm btn-danger" onclick="confirmDelete()">削除する</button>
     </div>
   </div>
+</div>
+
+<!-- ライトボックス -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
 </div>
 
 <div class="toast" id="toast"></div>
@@ -297,10 +346,13 @@ const CONFIG_KEY='nippo_sb_config';
 const CLIENTS_KEY='nippo_clients';
 const DOW=['日','月','火','水','木','金','土'];
 const MO=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const MAX_IMAGES=5;
+const BUCKET='report-images';
 
 let SB_URL='',SB_KEY='';
 let clients=[],activeClient=null;
 let curYear,curMonth,selectedDate=null,tasks=[];
+let reportImages=[]; // [{url, name, path}]
 let monthCache={};
 const now=new Date();
 const todayStr=fd(now);
@@ -327,6 +379,7 @@ function resetSettings(){
   document.getElementById('setup-wrap').style.display='flex';
 }
 
+// ===== Supabase REST =====
 async function sbFetch(path,opts={}){
   const res=await fetch(`${SB_URL}/rest/v1${path}`,{...opts,headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':opts.prefer||'',...(opts.headers||{})}});
   return res;
@@ -352,6 +405,34 @@ async function sbSelectMonth(clientId,y,m){
   return r.json();
 }
 
+// ===== Supabase Storage =====
+// パス: report-images/{clientId}/{dateStr}/{filename}
+function storagePath(clientId,dateStr,filename){
+  return `${clientId}/${dateStr}/${filename}`;
+}
+async function storageUpload(clientId,dateStr,file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  const fname=`${uid()}.${ext}`;
+  const path=storagePath(clientId,dateStr,fname);
+  const res=await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${path}`,{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':file.type,'x-upsert':'true'},
+    body:file
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||`Upload HTTP ${res.status}`)}
+  const publicUrl=`${SB_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+  return {url:publicUrl,name:file.name,path};
+}
+async function storageDelete(path){
+  const res=await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${path}`,{
+    method:'DELETE',
+    headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
+  });
+  // 404は無視（すでに消えている場合）
+  return res;
+}
+
+// ===== キャッシュ =====
 function cacheKey(clientId,y,m){return `${clientId}:${y}-${p2(m+1)}`}
 async function loadMonth(clientId,y,m){
   const ck=cacheKey(clientId,y,m);
@@ -380,6 +461,7 @@ function delCached(clientId,ds){
   if(monthCache[ck])delete monthCache[ck][ds];
 }
 
+// ===== セットアップ =====
 async function connectSupabase(){
   const url=document.getElementById('setup-url').value.trim();
   const key=document.getElementById('setup-key').value.trim();
@@ -415,12 +497,14 @@ function setupSQL(){
   memo text default '',
   submitted boolean default false,
   is_holiday boolean default false,
+  images jsonb default '[]',
   updated_at timestamptz default now(),
   unique(client_id, date_str)
 );
 
--- 既存テーブルに is_holiday カラムを追加する場合:
--- alter table daily_reports add column if not exists is_holiday boolean default false;`;
+-- 既存テーブルへのカラム追加:
+-- alter table daily_reports add column if not exists is_holiday boolean default false;
+-- alter table daily_reports add column if not exists images jsonb default '[]';`;
 }
 
 async function startApp(){
@@ -430,6 +514,7 @@ async function startApp(){
   if(clients.length>0)await selectClient(clients[0]);
 }
 
+// ===== クライアント管理 =====
 let editingClientId=null,selectedColor=COLORS[0];
 
 function renderClientList(){
@@ -439,7 +524,6 @@ function renderClientList(){
     const div=document.createElement('div');
     div.className='client-item'+(activeClient&&activeClient.id===c.id?' active':'');
     const ck=cacheKey(c.id,curYear,curMonth);
-    // ★ 休日を除いた件数
     const cnt=monthCache[ck]?Object.values(monthCache[ck]).filter(r=>r&&!r.is_holiday).length:'';
     div.innerHTML=`<div class="client-avatar" style="background:${c.color}">${esc(c.abbr||c.name.slice(0,2))}</div><span class="client-name" title="${esc(c.name)}">${esc(c.name)}</span>${cnt?`<span class="client-count">${cnt}</span>`:''}`;
     div.onclick=()=>selectClient(c);div.ondblclick=()=>openEditClient(c);
@@ -508,6 +592,7 @@ async function deleteClient(){
   renderClientList();showToast('クライアントを削除しました');
 }
 
+// ===== カレンダー =====
 function renderCalendar(){
   document.getElementById('cal-title').textContent=`${curYear}年 ${MO[curMonth]}`;
   const grid=document.getElementById('cal-grid');grid.innerHTML='';
@@ -527,7 +612,7 @@ function addDay(grid,dt,other){
   if(ds===selectedDate)el.classList.add('selected');
   const cached=activeClient?getCached(activeClient.id,ds):null;
   if(cached)el.classList.add('has-report');
-  if(cached&&cached.is_holiday)el.classList.add('is-holiday'); // ★
+  if(cached&&cached.is_holiday)el.classList.add('is-holiday');
   const dow=dt.getDay();
   if(!other&&dow===0)el.classList.add('sunday');
   if(!other&&dow===6)el.classList.add('saturday');
@@ -551,7 +636,7 @@ function updateStats(){
   const map=monthCache[ck]||{};
   let count=0,mins=0,done=0;
   Object.values(map).forEach(r=>{
-    if(!r||r.is_holiday)return; // ★ 休日除外
+    if(!r||r.is_holiday)return;
     count++;
     if(r.time_start&&r.time_end){
       const[sh,sm]=r.time_start.split(':').map(Number),[eh,em]=r.time_end.split(':').map(Number);
@@ -565,6 +650,7 @@ function updateStats(){
   document.getElementById('stat-tasks').textContent=done;
 }
 
+// ===== 日付選択 =====
 async function selectDate(ds){
   if(!activeClient)return;
   selectedDate=ds;renderCalendar();
@@ -580,6 +666,7 @@ async function selectDate(ds){
   }
 }
 
+// ===== フォーム描画 =====
 function renderForm(ds,row){
   if(!activeClient)return;
   const r=row?{
@@ -589,17 +676,18 @@ function renderForm(ds,row){
     work:row.work||'',issue:row.issue||'',
     next:row.next_plan||'',memo:row.memo||'',
     submitted:row.submitted||false,
-    isHoliday:row.is_holiday||false  // ★
+    isHoliday:row.is_holiday||false,
+    images:row.images||[]
   }:{
     title:'',client:activeClient.name,timeStart:'09:00',timeEnd:'18:00',
     tasks:[{text:'',done:false}],work:'',issue:'',next:'',memo:'',submitted:false,
-    isHoliday:false
+    isHoliday:false,images:[]
   };
   tasks=r.tasks.map(t=>({...t}));
+  reportImages=r.images.map(i=>({...i}));
 
   const holidayBanner=r.isHoliday
-    ?`<div class="holiday-banner"><span class="hb-icon">🏖</span>この日は休日に設定されています。月次PDFには含まれません。</div>`
-    :'';
+    ?`<div class="holiday-banner"><span class="hb-icon">🏖</span>この日は休日に設定されています。月次PDFには含まれません。</div>`:'';
 
   document.getElementById('form-area').innerHTML=`
     <div class="form-date-header">
@@ -665,6 +753,18 @@ function renderForm(ds,row){
         <label>連絡事項・メモ</label>
         <textarea id="f-memo" rows="2" placeholder="クライアントへの連絡事項など...">${esc(r.memo)}</textarea>
       </div>
+      <!-- ★ 画像添付セクション -->
+      <div class="form-section" id="img-section">
+        <label>添付画像（最大${MAX_IMAGES}枚）</label>
+        <div id="img-grid" class="img-grid"></div>
+        <div id="img-count" class="img-count"></div>
+        <div class="img-drop-zone" id="img-drop-zone">
+          <input type="file" id="img-file-input" accept="image/*" multiple onchange="handleFileSelect(this.files)">
+          <span class="dz-icon">🖼</span>
+          クリックまたはドラッグ＆ドロップで画像を追加
+          <div class="dz-hint">PNG / JPG / GIF / WebP 対応</div>
+        </div>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn btn-sm btn-danger" onclick="openDeleteModal()">🗑 削除</button>
@@ -676,54 +776,175 @@ function renderForm(ds,row){
   const fa=document.getElementById('form-area');
   fa.classList.toggle('holiday-mode',r.isHoliday);
   renderTasks();calcHours();
+  renderImageGrid();
+  setupDropZone();
 }
 
-// ★ 休日トグル
+// ===== 画像UI =====
+function renderImageGrid(){
+  const grid=document.getElementById('img-grid');
+  const countEl=document.getElementById('img-count');
+  const dz=document.getElementById('img-drop-zone');
+  if(!grid)return;
+  grid.innerHTML='';
+  reportImages.forEach((img,i)=>{
+    const div=document.createElement('div');
+    div.className='img-thumb';
+    div.innerHTML=`<img src="${esc(img.url)}" alt="${esc(img.name)}" loading="lazy" onclick="openLightbox('${esc(img.url)}')">
+      <button class="img-del" onclick="removeImage(${i})" title="削除">✕</button>`;
+    grid.appendChild(div);
+  });
+  if(countEl){
+    countEl.textContent=reportImages.length>0?`${reportImages.length} / ${MAX_IMAGES} 枚`:'';
+  }
+  // 上限に達したらドロップゾーンを非表示
+  if(dz){
+    dz.style.display=reportImages.length>=MAX_IMAGES?'none':'block';
+  }
+}
+
+function setupDropZone(){
+  const dz=document.getElementById('img-drop-zone');
+  if(!dz)return;
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over')});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop',e=>{
+    e.preventDefault();dz.classList.remove('drag-over');
+    handleFileSelect(e.dataTransfer.files);
+  });
+}
+
+async function handleFileSelect(files){
+  if(!files||!files.length)return;
+  if(!activeClient||!selectedDate){showToast('クライアントと日付を選択してください');return}
+  const remaining=MAX_IMAGES-reportImages.length;
+  if(remaining<=0){showToast(`画像は最大${MAX_IMAGES}枚までです`);return}
+  const toUpload=Array.from(files).slice(0,remaining);
+  // ファイルサイズチェック（10MB以下）
+  const oversized=toUpload.filter(f=>f.size>10*1024*1024);
+  if(oversized.length){showToast(`10MBを超えるファイルはアップロードできません`);return}
+
+  setSyncStatus('syncing','アップロード中...');
+
+  // プレースホルダーを先に表示
+  const placeholders=[];
+  toUpload.forEach((_,i)=>{
+    const grid=document.getElementById('img-grid');
+    if(!grid)return;
+    const div=document.createElement('div');div.className='img-thumb';
+    div.innerHTML=`<div class="img-uploading">アップロード中...</div>`;
+    div.id=`img-placeholder-${i}`;
+    grid.appendChild(div);
+    placeholders.push(div);
+  });
+
+  const results=[];
+  for(let i=0;i<toUpload.length;i++){
+    try{
+      const img=await storageUpload(activeClient.id,selectedDate,toUpload[i]);
+      results.push(img);
+      reportImages.push(img);
+      if(placeholders[i]){
+        placeholders[i].innerHTML=`<img src="${esc(img.url)}" alt="${esc(img.name)}" loading="lazy" onclick="openLightbox('${esc(img.url)}')">
+          <button class="img-del" onclick="removeImage(${reportImages.length-1})" title="削除">✕</button>`;
+        placeholders[i].id='';
+      }
+    }catch(e){
+      if(placeholders[i])placeholders[i].remove();
+      showToast(`❌ ${toUpload[i].name} のアップロード失敗`);
+    }
+  }
+
+  setSyncStatus('ok','Supabase 接続済');
+  renderImageGrid(); // 全体再描画でインデックスを正しく更新
+
+  if(results.length>0){
+    // 画像URLをDBに自動保存
+    await autoSaveImages();
+    showToast(`✓ ${results.length}枚アップロードしました`);
+  }
+
+  // ファイルinputをリセット
+  const inp=document.getElementById('img-file-input');
+  if(inp)inp.value='';
+}
+
+async function removeImage(index){
+  if(!confirm('この画像を削除しますか？'))return;
+  const img=reportImages[index];
+  if(!img)return;
+  setSyncStatus('syncing','削除中...');
+  try{
+    if(img.path)await storageDelete(img.path);
+    reportImages.splice(index,1);
+    renderImageGrid();
+    await autoSaveImages();
+    setSyncStatus('ok','Supabase 接続済');
+    showToast('画像を削除しました');
+  }catch(e){
+    setSyncStatus('error','削除エラー');
+    showToast('❌ 削除失敗: '+e.message);
+  }
+}
+
+async function autoSaveImages(){
+  if(!selectedDate||!activeClient)return;
+  try{
+    const data=collectForm(document.getElementById('btn-holiday')?.classList.contains('is-on')?false:
+      (getCached(activeClient.id,selectedDate)?.submitted||false));
+    await sbUpsert(data);
+    setCached(activeClient.id,selectedDate,data);
+  }catch(e){
+    showToast('❌ DB保存失敗: '+e.message);
+  }
+}
+
+// ===== ライトボックス =====
+function openLightbox(url){
+  document.getElementById('lightbox-img').src=url;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src='';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeLightbox();
+});
+
+// ===== 休日トグル =====
 function toggleHoliday(){
   if(!selectedDate||!activeClient)return;
   const btn=document.getElementById('btn-holiday');
   const badge=document.getElementById('status-badge');
   const fa=document.getElementById('form-area');
   const newHoliday=!btn.classList.contains('is-on');
-
   btn.classList.toggle('is-on',newHoliday);
   btn.textContent=`🏖 ${newHoliday?'休日を解除':'休日にする'}`;
   badge.className=`badge ${newHoliday?'badge-holiday':'badge-draft'}`;
   badge.textContent=newHoliday?'🏖 休日':'下書き';
   fa.classList.toggle('holiday-mode',newHoliday);
-
-  // バナー挿入/削除
   const existing=document.querySelector('.holiday-banner');
   if(newHoliday&&!existing){
-    const div=document.createElement('div');
-    div.className='holiday-banner';
+    const div=document.createElement('div');div.className='holiday-banner';
     div.innerHTML='<span class="hb-icon">🏖</span>この日は休日に設定されています。月次PDFには含まれません。';
     const header=document.querySelector('.form-date-header');
     if(header)header.insertAdjacentElement('afterend',div);
-  }else if(!newHoliday&&existing){
-    existing.remove();
-  }
+  }else if(!newHoliday&&existing){existing.remove()}
   autoSaveHoliday(newHoliday);
 }
-
 async function autoSaveHoliday(isHoliday){
   if(!selectedDate||!activeClient)return;
   setSyncStatus('syncing','保存中...');
   try{
-    const data=collectForm(false);
-    data.is_holiday=isHoliday;
-    if(isHoliday)data.submitted=false;
-    await sbUpsert(data);
-    setCached(activeClient.id,selectedDate,data);
-    setSyncStatus('ok','Supabase 接続済');
-    renderCalendar();updateStats();renderClientList();
+    const data=collectForm(false);data.is_holiday=isHoliday;if(isHoliday)data.submitted=false;
+    await sbUpsert(data);setCached(activeClient.id,selectedDate,data);
+    setSyncStatus('ok','Supabase 接続済');renderCalendar();updateStats();renderClientList();
     showToast(isHoliday?'🏖 休日に設定しました':'📋 稼働日に戻しました');
-  }catch(e){
-    setSyncStatus('error','保存エラー');
-    showToast('❌ 保存失敗: '+e.message);
-  }
+  }catch(e){setSyncStatus('error','保存エラー');showToast('❌ 保存失敗: '+e.message)}
 }
 
+// ===== タスク =====
 function renderTasks(){
   const ul=document.getElementById('task-list');if(!ul)return;ul.innerHTML='';
   tasks.forEach((t,i)=>{
@@ -753,7 +974,7 @@ async function carryOverTasks(){
     const toAdd=pending.filter(t=>!existingTexts.has(t.text)).map(t=>({text:t.text,done:false}));
     if(toAdd.length===0){showToast('翌日にすでに同じタスクが存在します');return}
     const mergedTasks=[...(nextRow?.tasks||[]),...toAdd];
-    const nextData={client_id:activeClient.id,date_str:nextDs,title:nextRow?.title||'',client:nextRow?.client||activeClient.name,time_start:nextRow?.time_start||'09:00',time_end:nextRow?.time_end||'18:00',tasks:mergedTasks,work:nextRow?.work||'',issue:nextRow?.issue||'',next_plan:nextRow?.next_plan||'',memo:nextRow?.memo||'',submitted:nextRow?.submitted||false,is_holiday:nextRow?.is_holiday||false,updated_at:new Date().toISOString()};
+    const nextData={client_id:activeClient.id,date_str:nextDs,title:nextRow?.title||'',client:nextRow?.client||activeClient.name,time_start:nextRow?.time_start||'09:00',time_end:nextRow?.time_end||'18:00',tasks:mergedTasks,work:nextRow?.work||'',issue:nextRow?.issue||'',next_plan:nextRow?.next_plan||'',memo:nextRow?.memo||'',submitted:nextRow?.submitted||false,is_holiday:nextRow?.is_holiday||false,images:nextRow?.images||[],updated_at:new Date().toISOString()};
     await sbUpsert(nextData);setCached(activeClient.id,nextDs,nextData);
     setSyncStatus('ok','Supabase 接続済');renderCalendar();updateStats();renderClientList();
     showToast(`✓ ${toAdd.length}件のタスクを ${labelDate(nextDs)} に持ち越しました`);
@@ -782,7 +1003,9 @@ function collectForm(submitted){
     issue:document.getElementById('f-issue')?.value||'',
     next_plan:document.getElementById('f-next')?.value||'',
     memo:document.getElementById('f-memo')?.value||'',
-    submitted,is_holiday:isHoliday,updated_at:new Date().toISOString()
+    submitted,is_holiday:isHoliday,
+    images:reportImages.map(i=>({...i})),
+    updated_at:new Date().toISOString()
   };
 }
 
@@ -806,6 +1029,7 @@ async function doSave(submitted){
   finally{if(btn){btn.disabled=false;btn.textContent=submitted?'✓ 確定・提出済':'💾 下書き保存'}}
 }
 
+// ===== 削除 =====
 let deleteTarget=null;
 function openDeleteModal(){deleteTarget=selectedDate;document.getElementById('delete-modal').classList.add('open')}
 function closeDeleteModal(){document.getElementById('delete-modal').classList.remove('open');deleteTarget=null}
@@ -813,6 +1037,11 @@ async function confirmDelete(){
   if(!deleteTarget||!activeClient)return;
   closeDeleteModal();setSyncStatus('syncing','削除中...');
   try{
+    // Storage画像も削除
+    const cached=getCached(activeClient.id,deleteTarget);
+    if(cached&&cached.images&&cached.images.length>0){
+      await Promise.allSettled(cached.images.map(img=>img.path?storageDelete(img.path):Promise.resolve()));
+    }
     await sbDelete(activeClient.id,deleteTarget);delCached(activeClient.id,deleteTarget);
     setSyncStatus('ok','Supabase 接続済');selectedDate=null;renderCalendar();updateStats();renderClientList();
     document.getElementById('form-area').innerHTML=`<div class="empty-state"><span class="empty-icon">🗑</span><p>削除しました</p></div>`;
@@ -820,8 +1049,9 @@ async function confirmDelete(){
   }catch(e){setSyncStatus('error','削除エラー');showToast('❌ 削除失敗')}
 }
 
+// ===== 印刷・PDF =====
 function printCSS(accentColor){
-  return `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${accentColor}}h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;page-break-inside:avoid}.report:last-child{border-bottom:none}.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}.r-date{font-size:11.5pt;font-weight:bold}.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.sec{margin-bottom:4mm;page-break-inside:avoid}.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;margin-bottom:2mm;letter-spacing:.05em}.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;line-height:1.8;min-height:1em}.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;color:#1D9E75;margin-top:1.5pt}@media print{body{padding:12mm 15mm}}`;
+  return `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${accentColor}}h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;page-break-inside:avoid}.report:last-child{border-bottom:none}.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}.r-date{font-size:11.5pt;font-weight:bold}.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.sec{margin-bottom:4mm;page-break-inside:avoid}.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;margin-bottom:2mm;letter-spacing:.05em}.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;line-height:1.8;min-height:1em}.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;color:#1D9E75;margin-top:1.5pt}.img-grid-print{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-top:2mm}.img-print{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:2px;border:0.5px solid #ddd}@media print{body{padding:12mm 15mm}}`;
 }
 function buildReportHTML(r,clientName){
   let mins=0;
@@ -844,6 +1074,13 @@ function buildReportHTML(r,clientName){
     html+=`</div>`;
   }
   if(r.memo)html+=`<div class="sec"><div class="slabel">連絡事項</div><div class="sval">${sh(r.memo)}</div></div>`;
+  // ★ 画像を印刷/PDFに含める
+  const imgs=(r.images||[]).filter(i=>i.url);
+  if(imgs.length){
+    html+=`<div class="sec"><div class="slabel">添付画像（${imgs.length}枚）</div><div class="img-grid-print">`;
+    imgs.forEach(img=>{html+=`<img class="img-print" src="${esc(img.url)}" alt="${esc(img.name||'')}">`});
+    html+=`</div></div>`;
+  }
   html+=`</div>`;
   return{html,mins,doneTasks:vt.filter(t=>t.done).length};
 }
@@ -854,7 +1091,7 @@ async function printCurrent(){
   let row=getCached(activeClient.id,selectedDate);
   if(!row)try{row=await sbSelect(activeClient.id,selectedDate)}catch(e){}
   if(!row){
-    row={date_str:selectedDate,title:document.getElementById('f-title')?.value||'',client:document.getElementById('f-client')?.value||activeClient.name,time_start:document.getElementById('f-start')?.value||'',time_end:document.getElementById('f-end')?.value||'',tasks:tasks.map(t=>({...t})),work:document.getElementById('f-work')?.value||'',issue:document.getElementById('f-issue')?.value||'',next_plan:document.getElementById('f-next')?.value||'',memo:document.getElementById('f-memo')?.value||'',submitted:false,is_holiday:false};
+    row={date_str:selectedDate,title:document.getElementById('f-title')?.value||'',client:document.getElementById('f-client')?.value||activeClient.name,time_start:document.getElementById('f-start')?.value||'',time_end:document.getElementById('f-end')?.value||'',tasks:tasks.map(t=>({...t})),work:document.getElementById('f-work')?.value||'',issue:document.getElementById('f-issue')?.value||'',next_plan:document.getElementById('f-next')?.value||'',memo:document.getElementById('f-memo')?.value||'',submitted:false,is_holiday:false,images:reportImages.map(i=>({...i}))};
   }
   const{html}=buildReportHTML(row,activeClient.name);
   const win=window.open('','_blank');
@@ -868,11 +1105,8 @@ async function exportMonthPDF(){
   let reports;
   try{reports=await sbSelectMonth(activeClient.id,curYear,curMonth);setSyncStatus('ok','Supabase 接続済')}
   catch(e){setSyncStatus('error','エラー');alert('取得失敗: '+e.message);return}
-
-  // ★ 休日を除外
   const workReports=reports.filter(r=>!r.is_holiday);
   if(!workReports.length){alert('今月の稼働日報がありません（すべて休日か、日報がありません）');return}
-
   let body='',totalMins=0,doneTasks=0;
   workReports.forEach(r=>{
     const res=buildReportHTML(r,activeClient.name);
