@@ -157,44 +157,37 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .toast.show{opacity:1}
 
 /* ===== 画像添付UI ===== */
-.img-drop-zone{
-  border:2px dashed var(--border2);border-radius:8px;padding:16px;
-  text-align:center;cursor:pointer;transition:all 0.15s;
-  color:var(--text3);font-size:12.5px;position:relative;
-  background:var(--bg);
-}
-.img-drop-zone:hover,.img-drop-zone.drag-over{
-  border-color:var(--accent);background:var(--accent-light);color:var(--accent-text);
-}
-.img-drop-zone input[type=file]{
-  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
-}
+.img-drop-zone{border:2px dashed var(--border2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all 0.15s;color:var(--text3);font-size:12.5px;position:relative;background:var(--bg)}
+.img-drop-zone:hover,.img-drop-zone.drag-over{border-color:var(--accent);background:var(--accent-light);color:var(--accent-text)}
+.img-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .img-drop-zone .dz-icon{font-size:22px;display:block;margin-bottom:4px}
 .img-drop-zone .dz-hint{font-size:11px;color:var(--text3);margin-top:2px}
 .img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:8px}
 .img-thumb{position:relative;border-radius:7px;overflow:hidden;border:1px solid var(--border);background:var(--bg);aspect-ratio:1}
 .img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.img-thumb .img-del{
-  position:absolute;top:3px;right:3px;
-  background:rgba(0,0,0,0.55);color:#fff;border:none;
-  border-radius:50%;width:20px;height:20px;font-size:13px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  line-height:1;opacity:0;transition:opacity 0.15s;
-}
+.img-thumb .img-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.55);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;opacity:0;transition:opacity 0.15s}
 .img-thumb:hover .img-del{opacity:1}
-.img-thumb .img-uploading{
-  position:absolute;inset:0;background:rgba(255,255,255,0.75);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:var(--accent);font-weight:600;
-}
+.img-thumb .img-uploading{position:absolute;inset:0;background:rgba(255,255,255,0.75);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent);font-weight:600}
 .img-count{font-size:11px;color:var(--text3);margin-bottom:6px}
 
-/* 画像ライトボックス */
+/* ライトボックス */
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:center;justify-content:center}
 .lightbox.open{display:flex}
 .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 60px rgba(0,0,0,0.5)}
 .lightbox-close{position:absolute;top:18px;right:22px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:0.8}
 .lightbox-close:hover{opacity:1}
+
+/* ===== 期間PDF モーダル ===== */
+.range-modal{width:420px}
+.range-modal .range-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.range-modal .modal-field input[type=date]{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
+.range-modal .modal-field input[type=date]:focus{border-color:var(--accent);background:var(--surface)}
+.range-preview{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7;min-height:38px}
+.range-preview strong{color:var(--accent);font-weight:700}
+.range-progress{display:none;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--text2)}
+.range-progress.visible{display:flex}
+.range-progress-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.range-progress-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 0.2s;width:0%}
 
 @media print{
   .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,
@@ -213,7 +206,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .form-row{height:auto!important;overflow:visible!important}
   .task-item{border:none!important;background:transparent!important;padding:2px 0!important}
   .form-section{page-break-inside:avoid}
-  /* 印刷時の画像グリッド */
   .img-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px!important}
   .img-thumb{page-break-inside:avoid;border:1px solid #ccc!important}
 }
@@ -265,7 +257,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="color:var(--text3);font-size:13px">クライアントを選択してください</div>
       </div>
       <div class="top-bar-actions">
-        <button class="btn btn-sm" onclick="exportMonthPDF()">📄 月次PDF</button>
+        <button class="btn btn-sm" onclick="openRangePDF()">📄 期間PDF</button>
         <button class="btn btn-sm btn-primary" onclick="printCurrent()">🖨 印刷</button>
       </div>
     </div>
@@ -332,6 +324,35 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
+<!-- ===== 期間PDF モーダル ===== -->
+<div class="modal-overlay" id="range-pdf-modal">
+  <div class="modal range-modal">
+    <h3>📄 期間を指定してPDF出力</h3>
+    <p style="margin-bottom:14px">稼働日の日報のみ出力されます（休日は除外）。</p>
+    <div class="range-row">
+      <div class="modal-field">
+        <label>開始日</label>
+        <input type="date" id="range-start" oninput="updateRangePreview()">
+      </div>
+      <div class="modal-field">
+        <label>終了日</label>
+        <input type="date" id="range-end" oninput="updateRangePreview()">
+      </div>
+    </div>
+    <div class="range-preview" id="range-preview">期間を選択してください</div>
+    <div class="range-progress" id="range-progress">
+      <span id="range-progress-label">取得中...</span>
+      <div class="range-progress-bar-wrap">
+        <div class="range-progress-bar" id="range-progress-bar"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeRangePDF()">キャンセル</button>
+      <button class="btn btn-sm btn-primary" id="range-export-btn" onclick="exportRangePDF()" disabled>PDF を出力</button>
+    </div>
+  </div>
+</div>
+
 <!-- ライトボックス -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -352,7 +373,7 @@ const BUCKET='report-images';
 let SB_URL='',SB_KEY='';
 let clients=[],activeClient=null;
 let curYear,curMonth,selectedDate=null,tasks=[];
-let reportImages=[]; // [{url, name, path}]
+let reportImages=[];
 let monthCache={};
 const now=new Date();
 const todayStr=fd(now);
@@ -404,12 +425,15 @@ async function sbSelectMonth(clientId,y,m){
   if(!r.ok)throw new Error(`HTTP ${r.status}`);
   return r.json();
 }
+// ★ 期間指定で日報を取得
+async function sbSelectRange(clientId,fromStr,toStr){
+  const r=await sbFetch(`/daily_reports?client_id=eq.${clientId}&date_str=gte.${fromStr}&date_str=lte.${toStr}&select=*&order=date_str.asc`);
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
 
 // ===== Supabase Storage =====
-// パス: report-images/{clientId}/{dateStr}/{filename}
-function storagePath(clientId,dateStr,filename){
-  return `${clientId}/${dateStr}/${filename}`;
-}
+function storagePath(clientId,dateStr,filename){return `${clientId}/${dateStr}/${filename}`}
 async function storageUpload(clientId,dateStr,file){
   const ext=file.name.split('.').pop().toLowerCase();
   const fname=`${uid()}.${ext}`;
@@ -428,7 +452,6 @@ async function storageDelete(path){
     method:'DELETE',
     headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
   });
-  // 404は無視（すでに消えている場合）
   return res;
 }
 
@@ -753,7 +776,6 @@ function renderForm(ds,row){
         <label>連絡事項・メモ</label>
         <textarea id="f-memo" rows="2" placeholder="クライアントへの連絡事項など...">${esc(r.memo)}</textarea>
       </div>
-      <!-- ★ 画像添付セクション -->
       <div class="form-section" id="img-section">
         <label>添付画像（最大${MAX_IMAGES}枚）</label>
         <div id="img-grid" class="img-grid"></div>
@@ -794,13 +816,8 @@ function renderImageGrid(){
       <button class="img-del" onclick="removeImage(${i})" title="削除">✕</button>`;
     grid.appendChild(div);
   });
-  if(countEl){
-    countEl.textContent=reportImages.length>0?`${reportImages.length} / ${MAX_IMAGES} 枚`:'';
-  }
-  // 上限に達したらドロップゾーンを非表示
-  if(dz){
-    dz.style.display=reportImages.length>=MAX_IMAGES?'none':'block';
-  }
+  if(countEl)countEl.textContent=reportImages.length>0?`${reportImages.length} / ${MAX_IMAGES} 枚`:'';
+  if(dz)dz.style.display=reportImages.length>=MAX_IMAGES?'none':'block';
 }
 
 function setupDropZone(){
@@ -808,10 +825,7 @@ function setupDropZone(){
   if(!dz)return;
   dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over')});
   dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
-  dz.addEventListener('drop',e=>{
-    e.preventDefault();dz.classList.remove('drag-over');
-    handleFileSelect(e.dataTransfer.files);
-  });
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');handleFileSelect(e.dataTransfer.files)});
 }
 
 async function handleFileSelect(files){
@@ -820,83 +834,51 @@ async function handleFileSelect(files){
   const remaining=MAX_IMAGES-reportImages.length;
   if(remaining<=0){showToast(`画像は最大${MAX_IMAGES}枚までです`);return}
   const toUpload=Array.from(files).slice(0,remaining);
-  // ファイルサイズチェック（10MB以下）
   const oversized=toUpload.filter(f=>f.size>10*1024*1024);
   if(oversized.length){showToast(`10MBを超えるファイルはアップロードできません`);return}
-
   setSyncStatus('syncing','アップロード中...');
-
-  // プレースホルダーを先に表示
   const placeholders=[];
   toUpload.forEach((_,i)=>{
-    const grid=document.getElementById('img-grid');
-    if(!grid)return;
+    const grid=document.getElementById('img-grid');if(!grid)return;
     const div=document.createElement('div');div.className='img-thumb';
     div.innerHTML=`<div class="img-uploading">アップロード中...</div>`;
-    div.id=`img-placeholder-${i}`;
-    grid.appendChild(div);
-    placeholders.push(div);
+    div.id=`img-placeholder-${i}`;grid.appendChild(div);placeholders.push(div);
   });
-
   const results=[];
   for(let i=0;i<toUpload.length;i++){
     try{
       const img=await storageUpload(activeClient.id,selectedDate,toUpload[i]);
-      results.push(img);
-      reportImages.push(img);
+      results.push(img);reportImages.push(img);
       if(placeholders[i]){
         placeholders[i].innerHTML=`<img src="${esc(img.url)}" alt="${esc(img.name)}" loading="lazy" onclick="openLightbox('${esc(img.url)}')">
           <button class="img-del" onclick="removeImage(${reportImages.length-1})" title="削除">✕</button>`;
         placeholders[i].id='';
       }
-    }catch(e){
-      if(placeholders[i])placeholders[i].remove();
-      showToast(`❌ ${toUpload[i].name} のアップロード失敗`);
-    }
+    }catch(e){if(placeholders[i])placeholders[i].remove();showToast(`❌ ${toUpload[i].name} のアップロード失敗`)}
   }
-
   setSyncStatus('ok','Supabase 接続済');
-  renderImageGrid(); // 全体再描画でインデックスを正しく更新
-
-  if(results.length>0){
-    // 画像URLをDBに自動保存
-    await autoSaveImages();
-    showToast(`✓ ${results.length}枚アップロードしました`);
-  }
-
-  // ファイルinputをリセット
-  const inp=document.getElementById('img-file-input');
-  if(inp)inp.value='';
+  renderImageGrid();
+  if(results.length>0){await autoSaveImages();showToast(`✓ ${results.length}枚アップロードしました`)}
+  const inp=document.getElementById('img-file-input');if(inp)inp.value='';
 }
 
 async function removeImage(index){
   if(!confirm('この画像を削除しますか？'))return;
-  const img=reportImages[index];
-  if(!img)return;
+  const img=reportImages[index];if(!img)return;
   setSyncStatus('syncing','削除中...');
   try{
     if(img.path)await storageDelete(img.path);
-    reportImages.splice(index,1);
-    renderImageGrid();
-    await autoSaveImages();
-    setSyncStatus('ok','Supabase 接続済');
-    showToast('画像を削除しました');
-  }catch(e){
-    setSyncStatus('error','削除エラー');
-    showToast('❌ 削除失敗: '+e.message);
-  }
+    reportImages.splice(index,1);renderImageGrid();
+    await autoSaveImages();setSyncStatus('ok','Supabase 接続済');showToast('画像を削除しました');
+  }catch(e){setSyncStatus('error','削除エラー');showToast('❌ 削除失敗: '+e.message)}
 }
 
 async function autoSaveImages(){
   if(!selectedDate||!activeClient)return;
   try{
-    const data=collectForm(document.getElementById('btn-holiday')?.classList.contains('is-on')?false:
-      (getCached(activeClient.id,selectedDate)?.submitted||false));
-    await sbUpsert(data);
-    setCached(activeClient.id,selectedDate,data);
-  }catch(e){
-    showToast('❌ DB保存失敗: '+e.message);
-  }
+    const data=collectForm(getCached(activeClient.id,selectedDate)?.submitted||false);
+    await sbUpsert(data);setCached(activeClient.id,selectedDate,data);
+  }catch(e){showToast('❌ DB保存失敗: '+e.message)}
 }
 
 // ===== ライトボックス =====
@@ -908,9 +890,6 @@ function closeLightbox(){
   document.getElementById('lightbox').classList.remove('open');
   document.getElementById('lightbox-img').src='';
 }
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')closeLightbox();
-});
 
 // ===== 休日トグル =====
 function toggleHoliday(){
@@ -1037,7 +1016,6 @@ async function confirmDelete(){
   if(!deleteTarget||!activeClient)return;
   closeDeleteModal();setSyncStatus('syncing','削除中...');
   try{
-    // Storage画像も削除
     const cached=getCached(activeClient.id,deleteTarget);
     if(cached&&cached.images&&cached.images.length>0){
       await Promise.allSettled(cached.images.map(img=>img.path?storageDelete(img.path):Promise.resolve()));
@@ -1049,7 +1027,7 @@ async function confirmDelete(){
   }catch(e){setSyncStatus('error','削除エラー');showToast('❌ 削除失敗')}
 }
 
-// ===== 印刷・PDF =====
+// ===== 印刷・PDF共通 =====
 function printCSS(accentColor){
   return `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${accentColor}}h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;page-break-inside:avoid}.report:last-child{border-bottom:none}.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}.r-date{font-size:11.5pt;font-weight:bold}.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.sec{margin-bottom:4mm;page-break-inside:avoid}.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;margin-bottom:2mm;letter-spacing:.05em}.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;line-height:1.8;min-height:1em}.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;color:#1D9E75;margin-top:1.5pt}.img-grid-print{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-top:2mm}.img-print{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:2px;border:0.5px solid #ddd}@media print{body{padding:12mm 15mm}}`;
 }
@@ -1074,7 +1052,6 @@ function buildReportHTML(r,clientName){
     html+=`</div>`;
   }
   if(r.memo)html+=`<div class="sec"><div class="slabel">連絡事項</div><div class="sval">${sh(r.memo)}</div></div>`;
-  // ★ 画像を印刷/PDFに含める
   const imgs=(r.images||[]).filter(i=>i.url);
   if(imgs.length){
     html+=`<div class="sec"><div class="slabel">添付画像（${imgs.length}枚）</div><div class="img-grid-print">`;
@@ -1099,25 +1076,106 @@ async function printCurrent(){
   win.document.close();setTimeout(()=>win.print(),400);
 }
 
-async function exportMonthPDF(){
+// ===== 期間PDF =====
+function openRangePDF(){
   if(!activeClient){alert('クライアントを選択してください');return}
+  // デフォルト: 今月の1日〜今日
+  const y=curYear,m=p2(curMonth+1);
+  document.getElementById('range-start').value=`${y}-${m}-01`;
+  document.getElementById('range-end').value=todayStr;
+  document.getElementById('range-progress').classList.remove('visible');
+  document.getElementById('range-export-btn').disabled=false;
+  updateRangePreview();
+  document.getElementById('range-pdf-modal').classList.add('open');
+}
+function closeRangePDF(){
+  document.getElementById('range-pdf-modal').classList.remove('open');
+}
+
+function updateRangePreview(){
+  const s=document.getElementById('range-start').value;
+  const e=document.getElementById('range-end').value;
+  const btn=document.getElementById('range-export-btn');
+  const preview=document.getElementById('range-preview');
+  if(!s||!e){preview.textContent='期間を選択してください';btn.disabled=true;return}
+  if(s>e){preview.innerHTML='<span style="color:var(--red)">⚠ 終了日は開始日より後にしてください</span>';btn.disabled=true;return}
+  // 日数を計算
+  const ds=parseDate(s),de=parseDate(e);
+  const days=Math.round((de-ds)/(1000*60*60*24))+1;
+  const sLabel=labelDate(s).replace('（'+DOW[ds.getDay()]+'）','（'+DOW[ds.getDay()]+'）');
+  const eLabel=labelDate(e).replace('（'+DOW[de.getDay()]+'）','（'+DOW[de.getDay()]+'）');
+  preview.innerHTML=`<strong>${sLabel}</strong> 〜 <strong>${eLabel}</strong><br><span style="color:var(--text3)">期間 ${days} 日間 ／ 稼働日報のみ出力（休日除外）</span>`;
+  btn.disabled=false;
+}
+
+async function exportRangePDF(){
+  if(!activeClient)return;
+  const fromStr=document.getElementById('range-start').value;
+  const toStr=document.getElementById('range-end').value;
+  if(!fromStr||!toStr||fromStr>toStr){showToast('期間を正しく入力してください');return}
+
+  const exportBtn=document.getElementById('range-export-btn');
+  const progress=document.getElementById('range-progress');
+  const progressBar=document.getElementById('range-progress-bar');
+  const progressLabel=document.getElementById('range-progress-label');
+
+  exportBtn.disabled=true;
+  progress.classList.add('visible');
+  progressLabel.textContent='Supabase からデータを取得中...';
+  progressBar.style.width='20%';
   setSyncStatus('syncing','取得中...');
+
   let reports;
-  try{reports=await sbSelectMonth(activeClient.id,curYear,curMonth);setSyncStatus('ok','Supabase 接続済')}
-  catch(e){setSyncStatus('error','エラー');alert('取得失敗: '+e.message);return}
+  try{
+    reports=await sbSelectRange(activeClient.id,fromStr,toStr);
+    setSyncStatus('ok','Supabase 接続済');
+  }catch(e){
+    setSyncStatus('error','エラー');
+    showToast('❌ 取得失敗: '+e.message);
+    exportBtn.disabled=false;progress.classList.remove('visible');
+    return;
+  }
+
+  progressBar.style.width='60%';
+  progressLabel.textContent='PDF を生成中...';
+
   const workReports=reports.filter(r=>!r.is_holiday);
-  if(!workReports.length){alert('今月の稼働日報がありません（すべて休日か、日報がありません）');return}
+  if(!workReports.length){
+    alert('指定期間に稼働日報がありません（休日のみ、または日報なし）');
+    exportBtn.disabled=false;progress.classList.remove('visible');
+    return;
+  }
+
   let body='',totalMins=0,doneTasks=0;
   workReports.forEach(r=>{
     const res=buildReportHTML(r,activeClient.name);
     body+=res.html;totalMins+=res.mins;doneTasks+=res.doneTasks;
   });
+
+  // タイトル行: 期間表示
+  const ds=parseDate(fromStr),de=parseDate(toStr);
+  const isSameMonth=ds.getFullYear()===de.getFullYear()&&ds.getMonth()===de.getMonth();
+  const periodLabel=isSameMonth
+    ?`${ds.getFullYear()}年${ds.getMonth()+1}月${ds.getDate()}日〜${de.getDate()}日`
+    :`${ds.getFullYear()}年${ds.getMonth()+1}月${ds.getDate()}日〜${de.getFullYear()}年${de.getMonth()+1}月${de.getDate()}日`;
+
   const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${curYear}年${MO[curMonth]} 業務日報</title><style>${printCSS(activeClient.color)}</style></head><body><h1>${sh(activeClient.name)}</h1><h2>${curYear}年${MO[curMonth]}　業務日報　／　${workReports.length}件・稼働${Math.floor(totalMins/60)}時間・完了タスク${doneTasks}件</h2>${body}</body></html>`);
-  win.document.close();setTimeout(()=>win.print(),600);
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${periodLabel} 業務日報</title><style>${printCSS(activeClient.color)}</style></head><body><h1>${sh(activeClient.name)}</h1><h2>${periodLabel}　業務日報　／　${workReports.length}件・稼働${Math.floor(totalMins/60)}時間${totalMins%60?totalMins%60+'分':''}・完了タスク${doneTasks}件</h2>${body}</body></html>`);
+  win.document.close();
+
+  progressBar.style.width='100%';
+  progressLabel.textContent='完了';
+  setTimeout(()=>{
+    win.print();
+    exportBtn.disabled=false;
+    progress.classList.remove('visible');
+    closeRangePDF();
+    showToast(`✓ ${workReports.length}件の日報をPDF出力しました`);
+  },300);
 }
 
 document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeLightbox();closeRangePDF()}
   if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();if(selectedDate&&activeClient)doSave(false)}
 });
 
