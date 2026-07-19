@@ -192,6 +192,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .range-progress.visible{display:flex}
 .range-progress-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
 .range-progress-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 0.2s;width:0%}
+.mr-ai-badge{display:inline-block;font-size:8pt;background:#E1F5EE;color:#085041;padding:0.5mm 2mm;border-radius:3px;margin-left:2mm;font-weight:700;vertical-align:middle}
+.mr-ai-disclaimer{margin-top:8mm;padding-top:4mm;border-top:0.5px solid #E8E5DF;font-size:8pt;color:#9B9890;line-height:1.6}
+.ai-check-label{display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;font-size:12.5px;font-weight:400;color:var(--text)}
+.ai-check-label input{width:auto!important;accent-color:var(--accent);cursor:pointer}
+.ai-check-label.disabled{opacity:0.5;cursor:not-allowed}
 
 @media print{
   .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,
@@ -251,6 +256,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="client-list" id="client-list"></div>
     <div class="sidebar-footer">
       <button class="add-client-btn" onclick="openAddClient()">＋ クライアントを追加</button>
+      <button class="settings-btn" onclick="openAISettings()">🤖 AI要約設定</button>
       <button class="settings-btn" onclick="resetSettings()">⚙ 接続設定を変更</button>
     </div>
   </div>
@@ -374,8 +380,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
     </div>
     <div class="modal-field">
-      <label>今月の成果・サマリー（任意）</label>
-      <textarea id="mr-summary" rows="3" placeholder="今月の主な成果を自由記述で入力できます（未入力の場合は完了タスクの一覧のみ表示されます）" style="width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg)"></textarea>
+      <label class="ai-check-label" id="mr-ai-label">
+        <input type="checkbox" id="mr-use-ai"> 🤖 AIで「実施内容・成果・課題」を要約する
+      </label>
+      <div class="setup-hint" id="mr-ai-hint"></div>
+    </div>
+    <div class="modal-field">
+      <label>今月の成果・サマリー（任意・手動メモ）</label>
+      <textarea id="mr-summary" rows="3" placeholder="今月の主な成果を自由記述で入力できます（AI要約と併記されます）" style="width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg)"></textarea>
     </div>
     <div class="range-preview" id="mr-preview">対象月を選択してください</div>
     <div class="range-progress" id="mr-progress">
@@ -387,6 +399,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="modal-actions">
       <button class="btn btn-sm" onclick="closeMonthlyReport()">キャンセル</button>
       <button class="btn btn-sm btn-primary" id="mr-generate-btn" onclick="generateMonthlyReport()">月報を生成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AI要約 設定モーダル ===== -->
+<div class="modal-overlay" id="ai-settings-modal">
+  <div class="modal">
+    <h3>🤖 AI 要約設定</h3>
+    <p>月報の「実施内容」「今月の成果」「課題」をAIが自動要約します。<br>
+    入力したAPIキーはこのブラウザにのみ保存され、要約作成時にお使いのブラウザから直接 Anthropic API へ送信されます（Supabaseや他の場所には送信されません）。<br>
+    利用には Anthropic API の従量課金が発生します。</p>
+    <div class="modal-field">
+      <label>Anthropic API キー</label>
+      <input type="text" id="ai-api-key" placeholder="sk-ant-...">
+      <div class="setup-hint">console.anthropic.com &gt; API Keys で発行できます</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-danger" id="ai-clear-btn" onclick="clearAISettings()">🗑 キーを削除</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-sm" onclick="closeAISettings()">キャンセル</button>
+      <button class="btn btn-sm btn-primary" onclick="saveAISettings()">保存</button>
     </div>
   </div>
 </div>
@@ -403,6 +436,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 const COLORS=['#1D9E75','#185FA5','#D85A30','#BA7517','#7F77DD','#993556','#639922','#5F5E5A','#0F6E56','#993C1D'];
 const CONFIG_KEY='nippo_sb_config';
 const CLIENTS_KEY='nippo_clients';
+const AI_CONFIG_KEY='nippo_ai_config';
+const AI_MODEL='claude-sonnet-5';
 const DOW=['日','月','火','水','木','金','土'];
 const MO=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const MAX_IMAGES=5;
@@ -436,6 +471,27 @@ function resetSettings(){
   localStorage.removeItem(CONFIG_KEY);monthCache={};
   document.getElementById('app-shell').style.display='none';
   document.getElementById('setup-wrap').style.display='flex';
+}
+
+// ===== AI要約 設定 =====
+function loadAIConfig(){try{return JSON.parse(localStorage.getItem(AI_CONFIG_KEY))}catch{return null}}
+function saveAIConfigLS(key){localStorage.setItem(AI_CONFIG_KEY,JSON.stringify({apiKey:key}))}
+function openAISettings(){
+  const cfg=loadAIConfig();
+  document.getElementById('ai-api-key').value=cfg?.apiKey||'';
+  document.getElementById('ai-settings-modal').classList.add('open');
+}
+function closeAISettings(){document.getElementById('ai-settings-modal').classList.remove('open')}
+function saveAISettings(){
+  const key=document.getElementById('ai-api-key').value.trim();
+  if(!key){showToast('APIキーを入力してください');return}
+  saveAIConfigLS(key);closeAISettings();showToast('✓ AI設定を保存しました');
+}
+function clearAISettings(){
+  if(!confirm('保存したAPIキーを削除しますか？'))return;
+  localStorage.removeItem(AI_CONFIG_KEY);
+  document.getElementById('ai-api-key').value='';
+  showToast('APIキーを削除しました');
 }
 
 // ===== Supabase REST =====
@@ -1238,7 +1294,7 @@ h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:10mm;padding-bot
 @media print{body{padding:12mm 15mm}}`;
 }
 
-function buildMonthlyReportHTML(rows,y,m,summaryText,clientName){
+function buildMonthlyReportHTML(rows,y,m,summaryText,clientName,aiSummary){
   let totalMins=0,totalDoneTasks=0,totalTasks=0;
   const tableRows=rows.map(r=>{
     let mins=0;
@@ -1260,12 +1316,18 @@ function buildMonthlyReportHTML(rows,y,m,summaryText,clientName){
   const avgH=Math.floor(avgMins/60),avgM=avgMins%60;
 
   // 2. 実施内容
-  const workItems=rows.filter(r=>r.work&&r.work.trim()).map(r=>{
-    const dt=parseDate(r.date_str);
-    return `<div class="mr-item"><div class="mr-item-date">${dt.getMonth()+1}/${dt.getDate()}（${DOW[dt.getDay()]}）</div><div class="mr-item-body">${sh(r.work)}</div></div>`;
-  }).join('');
+  let workHTML;
+  if(aiSummary&&aiSummary.work_summary){
+    workHTML=`<div class="mr-summary-text">${sh(aiSummary.work_summary)}</div>`;
+  }else{
+    const workItems=rows.filter(r=>r.work&&r.work.trim()).map(r=>{
+      const dt=parseDate(r.date_str);
+      return `<div class="mr-item"><div class="mr-item-date">${dt.getMonth()+1}/${dt.getDate()}（${DOW[dt.getDay()]}）</div><div class="mr-item-body">${sh(r.work)}</div></div>`;
+    }).join('');
+    workHTML=workItems||'<div class="mr-empty">記録がありません</div>';
+  }
 
-  // 3. 今月の成果（完了タスク一覧 + 任意サマリー）
+  // 3. 今月の成果（AI要約 or 手動サマリー + 完了タスク一覧）
   const achievementTasks=[];
   rows.forEach(r=>{
     (r.tasks||[]).forEach(t=>{
@@ -1276,15 +1338,28 @@ function buildMonthlyReportHTML(rows,y,m,summaryText,clientName){
     });
   });
   let achievementHTML='';
+  if(aiSummary&&aiSummary.achievements_summary)achievementHTML+=`<div class="mr-summary-text">${sh(aiSummary.achievements_summary)}</div>`;
   if(summaryText)achievementHTML+=`<div class="mr-summary-text">${sh(summaryText)}</div>`;
-  if(achievementTasks.length)achievementHTML+=`<ul class="mr-achieve-list">${achievementTasks.join('')}</ul>`;
-  else if(!summaryText)achievementHTML+=`<div class="mr-empty">記録された完了タスクはありません</div>`;
+  if(achievementTasks.length){
+    achievementHTML+=`<div class="mr-item-date" style="margin-top:2mm">${aiSummary||summaryText?'参考：完了タスク一覧':'完了タスク一覧'}</div><ul class="mr-achieve-list">${achievementTasks.join('')}</ul>`;
+  }else if(!aiSummary&&!summaryText){
+    achievementHTML+=`<div class="mr-empty">記録された完了タスクはありません</div>`;
+  }
 
   // 4. 課題
-  const issueItems=rows.filter(r=>r.issue&&r.issue.trim()).map(r=>{
-    const dt=parseDate(r.date_str);
-    return `<div class="mr-item"><div class="mr-item-date">${dt.getMonth()+1}/${dt.getDate()}（${DOW[dt.getDay()]}）</div><div class="mr-item-body">${sh(r.issue)}</div></div>`;
-  }).join('');
+  let issueHTML;
+  if(aiSummary&&aiSummary.issues_summary){
+    issueHTML=`<div class="mr-summary-text">${sh(aiSummary.issues_summary)}</div>`;
+  }else{
+    const issueItems=rows.filter(r=>r.issue&&r.issue.trim()).map(r=>{
+      const dt=parseDate(r.date_str);
+      return `<div class="mr-item"><div class="mr-item-date">${dt.getMonth()+1}/${dt.getDate()}（${DOW[dt.getDay()]}）</div><div class="mr-item-body">${sh(r.issue)}</div></div>`;
+    }).join('');
+    issueHTML=issueItems||'<div class="mr-empty">記録された課題はありません</div>';
+  }
+
+  const aiBadge=aiSummary?'<span class="mr-ai-badge">🤖 AI要約</span>':'';
+  const aiDisclaimer=aiSummary?'<div class="mr-ai-disclaimer">※「実施内容」「今月の成果」「課題」はAIが日々の日報データをもとに自動生成しています。内容をご確認のうえご活用ください。</div>':'';
 
   return `
   <h1>${sh(clientName)}　月次業務報告書</h1>
@@ -1305,20 +1380,59 @@ function buildMonthlyReportHTML(rows,y,m,summaryText,clientName){
   </div>
 
   <div class="mr-section">
-    <h3>2. 実施内容</h3>
-    ${workItems||'<div class="mr-empty">記録がありません</div>'}
+    <h3>2. 実施内容${aiBadge}</h3>
+    ${workHTML}
   </div>
 
   <div class="mr-section">
-    <h3>3. 今月の成果</h3>
+    <h3>3. 今月の成果${aiBadge}</h3>
     ${achievementHTML}
   </div>
 
   <div class="mr-section">
-    <h3>4. 課題</h3>
-    ${issueItems||'<div class="mr-empty">記録された課題はありません</div>'}
+    <h3>4. 課題${aiBadge}</h3>
+    ${issueHTML}
   </div>
+  ${aiDisclaimer}
   `;
+}
+
+async function callClaudeSummary(apiKey,workRows,clientName,y,m){
+  const compact=workRows.map(r=>({
+    date:r.date_str,
+    title:r.title||'',
+    work:r.work||'',
+    issue:r.issue||'',
+    tasks:(r.tasks||[]).filter(t=>t.text).map(t=>({text:t.text,done:!!t.done}))
+  }));
+  const sys=`あなたはIT・業務委託の月次報告書作成を支援するアシスタントです。与えられた日次日報データから、クライアント向け月次報告書に掲載する3つのセクション文章を作成してください。
+出力は必ず次のJSON形式のみとし、前置き・後書き・コードブロック記法（\`\`\`）は一切含めないでください。
+{"work_summary":"実施内容のまとめ。日付を羅列するのではなく、実施した作業をテーマ・カテゴリごとに整理した文章（箇条書きの場合は各行を「・」で始める）","achievements_summary":"今月の成果のまとめ。完了したタスクや具体的な成果物・進捗を中心に、クライアントに伝わる言葉で記述","issues_summary":"課題・懸念点のまとめ。重複や類似の課題はまとめ、分かる範囲で深刻度や対応状況にも触れる。課題が無ければ「特筆すべき課題はありませんでした。」としてください"}
+文体は丁寧語（です・ます調）で、簡潔かつ具体的に記述してください。`;
+  const usr=`クライアント名: ${clientName}\n対象月: ${y}年${m+1}月\n\n日次日報データ(JSON):\n${JSON.stringify(compact)}`;
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:AI_MODEL,
+      max_tokens:1500,
+      system:sys,
+      messages:[{role:'user',content:usr}]
+    })
+  });
+  if(!res.ok){
+    const e=await res.json().catch(()=>({}));
+    throw new Error(e.error?.message||`HTTP ${res.status}`);
+  }
+  const data=await res.json();
+  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  const clean=text.replace(/```json|```/g,'').trim();
+  return JSON.parse(clean);
 }
 
 function openMonthlyReport(){
@@ -1340,12 +1454,26 @@ function openMonthlyReport(){
   document.getElementById('mr-summary').value='';
   document.getElementById('mr-progress').classList.remove('visible');
   document.getElementById('mr-generate-btn').disabled=false;
+  syncMonthlyAIField();
   updateMonthlyPreview();
   yearSel.onchange=updateMonthlyPreview;monthSel.onchange=updateMonthlyPreview;
   document.getElementById('monthly-report-modal').classList.add('open');
 }
 function closeMonthlyReport(){
   document.getElementById('monthly-report-modal').classList.remove('open');
+}
+function syncMonthlyAIField(){
+  const cfg=loadAIConfig();
+  const cb=document.getElementById('mr-use-ai');
+  const hint=document.getElementById('mr-ai-hint');
+  const label=document.getElementById('mr-ai-label');
+  if(cfg&&cfg.apiKey){
+    cb.disabled=false;cb.checked=true;label.classList.remove('disabled');
+    hint.textContent='';
+  }else{
+    cb.disabled=true;cb.checked=false;label.classList.add('disabled');
+    hint.innerHTML='AI要約を使うには、サイドバー下部の「🤖 AI要約設定」からAPIキーを登録してください。';
+  }
 }
 function updateMonthlyPreview(){
   const y=document.getElementById('mr-year').value;
@@ -1383,7 +1511,7 @@ async function generateMonthlyReport(){
     return;
   }
 
-  progressBar.style.width='60%';
+  progressBar.style.width='50%';
   progressLabel.textContent='月報を生成中...';
 
   const workRows=rows.filter(r=>!r.is_holiday).sort((a,b)=>a.date_str<b.date_str?-1:a.date_str>b.date_str?1:0);
@@ -1393,7 +1521,23 @@ async function generateMonthlyReport(){
     return;
   }
 
-  const body=buildMonthlyReportHTML(workRows,y,m,summaryText,activeClient.name);
+  const useAI=document.getElementById('mr-use-ai').checked&&!document.getElementById('mr-use-ai').disabled;
+  let aiSummary=null;
+  if(useAI){
+    const aiCfg=loadAIConfig();
+    progressLabel.textContent='🤖 AIが要約を作成中...';
+    progressBar.style.width='75%';
+    try{
+      aiSummary=await callClaudeSummary(aiCfg.apiKey,workRows,activeClient.name,y,m);
+    }catch(e){
+      showToast('❌ AI要約に失敗しました。通常の集計で作成します: '+e.message);
+      aiSummary=null;
+    }
+  }
+
+  progressBar.style.width='90%';
+  progressLabel.textContent='PDF を生成中...';
+  const body=buildMonthlyReportHTML(workRows,y,m,summaryText,activeClient.name,aiSummary);
 
   const win=window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${y}年${m+1}月 月次業務報告書</title><style>${monthlyPrintCSS(activeClient.color)}</style></head><body>${body}</body></html>`);
@@ -1411,7 +1555,7 @@ async function generateMonthlyReport(){
 }
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeLightbox();closeRangePDF();closeMonthlyReport()}
+  if(e.key==='Escape'){closeLightbox();closeRangePDF();closeMonthlyReport();closeAISettings()}
   if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();if(selectedDate&&activeClient)doSave(false)}
 });
 
