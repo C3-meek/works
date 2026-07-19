@@ -1215,57 +1215,69 @@ async function exportRangePDF(){
 
   exportBtn.disabled=true;
   progress.classList.add('visible');
-  progressLabel.textContent='Supabase からデータを取得中...';
-  progressBar.style.width='20%';
-  setSyncStatus('syncing','取得中...');
+  progressLabel.textContent='ウィンドウを準備中...';
+  progressBar.style.width='10%';
 
-  let reports;
+  // ★ ポップアップブロック対策: 非同期処理の前に、クリック操作の直後で先にウィンドウを開いておく
+  const win=window.open('','_blank');
+  if(win){
+    win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>業務日報を生成中...</title></head><body style="font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;padding:60px;color:#6B6860"><p>業務日報PDFを生成しています。しばらくお待ちください…</p></body></html>`);
+    win.document.close();
+  }
+
   try{
-    reports=await sbSelectRange(activeClient.id,fromStr,toStr);
+    progressLabel.textContent='Supabase からデータを取得中...';
+    progressBar.style.width='30%';
+    setSyncStatus('syncing','取得中...');
+    const reports=await sbSelectRange(activeClient.id,fromStr,toStr);
     setSyncStatus('ok','Supabase 接続済');
+
+    progressBar.style.width='60%';
+    progressLabel.textContent='PDF を生成中...';
+
+    const workReports=reports.filter(r=>!r.is_holiday);
+    if(!workReports.length){
+      if(win&&!win.closed)win.close();
+      alert('指定期間に稼働日報がありません（休日のみ、または日報なし）');
+      return;
+    }
+
+    let body='',totalMins=0,doneTasks=0;
+    workReports.forEach(r=>{
+      const res=buildReportHTML(r,activeClient.name);
+      body+=res.html;totalMins+=res.mins;doneTasks+=res.doneTasks;
+    });
+
+    // タイトル行: 期間表示
+    const ds=parseDate(fromStr),de=parseDate(toStr);
+    const isSameMonth=ds.getFullYear()===de.getFullYear()&&ds.getMonth()===de.getMonth();
+    const periodLabel=isSameMonth
+      ?`${ds.getFullYear()}年${ds.getMonth()+1}月${ds.getDate()}日〜${de.getDate()}日`
+      :`${ds.getFullYear()}年${ds.getMonth()+1}月${ds.getDate()}日〜${de.getFullYear()}年${de.getMonth()+1}月${de.getDate()}日`;
+
+    if(!win||win.closed){
+      showToast('❌ 新しいタブがブロックされました。ブラウザのポップアップ許可設定をご確認のうえ再度お試しください');
+      return;
+    }
+    win.document.open();
+    win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${periodLabel} 業務日報</title><style>${printCSS(activeClient.color)}</style></head><body><h1>${sh(activeClient.name)}</h1><h2>${periodLabel}　業務日報　／　${workReports.length}件・稼働${Math.floor(totalMins/60)}時間${totalMins%60?totalMins%60+'分':''}・完了タスク${doneTasks}件</h2>${body}</body></html>`);
+    win.document.close();
+
+    progressBar.style.width='100%';
+    progressLabel.textContent='完了';
+    setTimeout(()=>{
+      win.print();
+      closeRangePDF();
+      showToast(`✓ ${workReports.length}件の日報をPDF出力しました`);
+    },300);
   }catch(e){
     setSyncStatus('error','エラー');
-    showToast('❌ 取得失敗: '+e.message);
-    exportBtn.disabled=false;progress.classList.remove('visible');
-    return;
-  }
-
-  progressBar.style.width='60%';
-  progressLabel.textContent='PDF を生成中...';
-
-  const workReports=reports.filter(r=>!r.is_holiday);
-  if(!workReports.length){
-    alert('指定期間に稼働日報がありません（休日のみ、または日報なし）');
-    exportBtn.disabled=false;progress.classList.remove('visible');
-    return;
-  }
-
-  let body='',totalMins=0,doneTasks=0;
-  workReports.forEach(r=>{
-    const res=buildReportHTML(r,activeClient.name);
-    body+=res.html;totalMins+=res.mins;doneTasks+=res.doneTasks;
-  });
-
-  // タイトル行: 期間表示
-  const ds=parseDate(fromStr),de=parseDate(toStr);
-  const isSameMonth=ds.getFullYear()===de.getFullYear()&&ds.getMonth()===de.getMonth();
-  const periodLabel=isSameMonth
-    ?`${ds.getFullYear()}年${ds.getMonth()+1}月${ds.getDate()}日〜${de.getDate()}日`
-    :`${ds.getFullYear()}年${ds.getMonth()+1}月${ds.getDate()}日〜${de.getFullYear()}年${de.getMonth()+1}月${de.getDate()}日`;
-
-  const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${periodLabel} 業務日報</title><style>${printCSS(activeClient.color)}</style></head><body><h1>${sh(activeClient.name)}</h1><h2>${periodLabel}　業務日報　／　${workReports.length}件・稼働${Math.floor(totalMins/60)}時間${totalMins%60?totalMins%60+'分':''}・完了タスク${doneTasks}件</h2>${body}</body></html>`);
-  win.document.close();
-
-  progressBar.style.width='100%';
-  progressLabel.textContent='完了';
-  setTimeout(()=>{
-    win.print();
+    showToast('❌ PDF出力に失敗しました: '+e.message);
+    if(win&&!win.closed)win.close();
+  }finally{
     exportBtn.disabled=false;
     progress.classList.remove('visible');
-    closeRangePDF();
-    showToast(`✓ ${workReports.length}件の日報をPDF出力しました`);
-  },300);
+  }
 }
 
 // ===== 月次報告書 (月報) =====
@@ -1488,6 +1500,7 @@ async function generateMonthlyReport(){
   const y=parseInt(document.getElementById('mr-year').value,10);
   const m=parseInt(document.getElementById('mr-month').value,10)-1;
   const summaryText=document.getElementById('mr-summary').value.trim();
+  const useAI=document.getElementById('mr-use-ai').checked&&!document.getElementById('mr-use-ai').disabled;
 
   const btn=document.getElementById('mr-generate-btn');
   const progress=document.getElementById('mr-progress');
@@ -1496,62 +1509,70 @@ async function generateMonthlyReport(){
 
   btn.disabled=true;
   progress.classList.add('visible');
-  progressLabel.textContent='Supabase からデータを取得中...';
-  progressBar.style.width='20%';
-  setSyncStatus('syncing','取得中...');
+  progressLabel.textContent='ウィンドウを準備中...';
+  progressBar.style.width='10%';
 
-  let rows;
+  // ★ ポップアップブロック対策: 非同期処理(AI要約など)の前に、クリック操作の直後で先にウィンドウを開いておく
+  const win=window.open('','_blank');
+  if(win){
+    win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>月次業務報告書を生成中...</title></head><body style="font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;padding:60px;color:#6B6860"><p>月次業務報告書を生成しています。しばらくお待ちください…</p></body></html>`);
+    win.document.close();
+  }
+
   try{
-    rows=await sbSelectMonth(activeClient.id,y,m);
+    progressLabel.textContent='Supabase からデータを取得中...';
+    progressBar.style.width='25%';
+    setSyncStatus('syncing','取得中...');
+    const rows=await sbSelectMonth(activeClient.id,y,m);
     setSyncStatus('ok','Supabase 接続済');
+
+    const workRows=rows.filter(r=>!r.is_holiday).sort((a,b)=>a.date_str<b.date_str?-1:a.date_str>b.date_str?1:0);
+    if(!workRows.length){
+      if(win&&!win.closed)win.close();
+      alert('指定月に稼働日報がありません（休日のみ、または日報なし）');
+      return;
+    }
+
+    let aiSummary=null;
+    if(useAI){
+      const aiCfg=loadAIConfig();
+      progressLabel.textContent='🤖 AIが要約を作成中...（数十秒かかる場合があります）';
+      progressBar.style.width='55%';
+      try{
+        aiSummary=await callClaudeSummary(aiCfg.apiKey,workRows,activeClient.name,y,m);
+      }catch(e){
+        showToast('❌ AI要約に失敗しました。通常の集計で作成します: '+e.message);
+        aiSummary=null;
+      }
+    }
+
+    progressBar.style.width='90%';
+    progressLabel.textContent='PDF を生成中...';
+    const body=buildMonthlyReportHTML(workRows,y,m,summaryText,activeClient.name,aiSummary);
+
+    if(!win||win.closed){
+      showToast('❌ 新しいタブがブロックされました。ブラウザのポップアップ許可設定をご確認のうえ再度お試しください');
+      return;
+    }
+    win.document.open();
+    win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${y}年${m+1}月 月次業務報告書</title><style>${monthlyPrintCSS(activeClient.color)}</style></head><body>${body}</body></html>`);
+    win.document.close();
+
+    progressBar.style.width='100%';
+    progressLabel.textContent='完了';
+    setTimeout(()=>{
+      win.print();
+      closeMonthlyReport();
+      showToast(`✓ ${y}年${m+1}月の月報を生成しました（${workRows.length}件の日報を集計）${aiSummary?'（AI要約あり）':''}`);
+    },300);
   }catch(e){
     setSyncStatus('error','エラー');
-    showToast('❌ 取得失敗: '+e.message);
-    btn.disabled=false;progress.classList.remove('visible');
-    return;
-  }
-
-  progressBar.style.width='50%';
-  progressLabel.textContent='月報を生成中...';
-
-  const workRows=rows.filter(r=>!r.is_holiday).sort((a,b)=>a.date_str<b.date_str?-1:a.date_str>b.date_str?1:0);
-  if(!workRows.length){
-    alert('指定月に稼働日報がありません（休日のみ、または日報なし）');
-    btn.disabled=false;progress.classList.remove('visible');
-    return;
-  }
-
-  const useAI=document.getElementById('mr-use-ai').checked&&!document.getElementById('mr-use-ai').disabled;
-  let aiSummary=null;
-  if(useAI){
-    const aiCfg=loadAIConfig();
-    progressLabel.textContent='🤖 AIが要約を作成中...';
-    progressBar.style.width='75%';
-    try{
-      aiSummary=await callClaudeSummary(aiCfg.apiKey,workRows,activeClient.name,y,m);
-    }catch(e){
-      showToast('❌ AI要約に失敗しました。通常の集計で作成します: '+e.message);
-      aiSummary=null;
-    }
-  }
-
-  progressBar.style.width='90%';
-  progressLabel.textContent='PDF を生成中...';
-  const body=buildMonthlyReportHTML(workRows,y,m,summaryText,activeClient.name,aiSummary);
-
-  const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${y}年${m+1}月 月次業務報告書</title><style>${monthlyPrintCSS(activeClient.color)}</style></head><body>${body}</body></html>`);
-  win.document.close();
-
-  progressBar.style.width='100%';
-  progressLabel.textContent='完了';
-  setTimeout(()=>{
-    win.print();
+    showToast('❌ 月報の生成に失敗しました: '+e.message);
+    if(win&&!win.closed)win.close();
+  }finally{
     btn.disabled=false;
     progress.classList.remove('visible');
-    closeMonthlyReport();
-    showToast(`✓ ${y}年${m+1}月の月報を生成しました（${workRows.length}件の日報を集計）`);
-  },300);
+  }
 }
 
 document.addEventListener('keydown',e=>{
