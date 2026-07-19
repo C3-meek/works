@@ -1308,17 +1308,12 @@ h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:10mm;padding-bot
 
 function buildMonthlyReportHTML(rows,y,m,summaryText,clientName,aiSummary){
   let totalMins=0;
-  const tableRows=rows.map(r=>{
-    let mins=0;
+  rows.forEach(r=>{
     if(r.time_start&&r.time_end){
       const[sh1,sm1]=r.time_start.split(':').map(Number),[eh1,em1]=r.time_end.split(':').map(Number);
-      mins=Math.max(0,eh1*60+em1-sh1*60-sm1);
+      totalMins+=Math.max(0,eh1*60+em1-sh1*60-sm1);
     }
-    totalMins+=mins;
-    const dt=parseDate(r.date_str);
-    const hStr=mins>0?`${Math.floor(mins/60)}.${Math.round((mins%60)/6)}`:'—';
-    return `<tr><td>${dt.getDate()}日（${DOW[dt.getDay()]}）</td><td>${sh(r.title||'')}</td><td>${r.time_start&&r.time_end?`${r.time_start}〜${r.time_end}`:''}</td><td style="text-align:right">${hStr}</td></tr>`;
-  }).join('');
+  });
 
   const hh=Math.floor(totalMins/60),mm2=totalMins%60;
   const avgMins=rows.length?Math.round(totalMins/rows.length):0;
@@ -1381,10 +1376,6 @@ function buildMonthlyReportHTML(rows,y,m,summaryText,clientName,aiSummary){
       <div class="mr-stat"><div class="mr-stat-num">${hh}.${Math.round(mm2/6)}</div><div class="mr-stat-label">総稼働時間</div></div>
       <div class="mr-stat"><div class="mr-stat-num">${avgH}.${Math.round(avgM/6)}</div><div class="mr-stat-label">平均稼働時間/日</div></div>
     </div>
-    <table class="mr-table">
-      <thead><tr><th>日付</th><th>タイトル</th><th>作業時間</th><th>稼働時間</th></tr></thead>
-      <tbody>${tableRows}</tbody>
-    </table>
   </div>
 
   <div class="mr-section">
