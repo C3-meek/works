@@ -1370,9 +1370,6 @@ function buildMonthlyReportHTML(rows,y,m,summaryText,clientName,aiSummary){
     issueHTML=issueItems||'<div class="mr-empty">記録された課題はありません</div>';
   }
 
-  const aiBadge=aiSummary?'<span class="mr-ai-badge">🤖 AI要約</span>':'';
-  const aiDisclaimer=aiSummary?'<div class="mr-ai-disclaimer">※「実施内容」「今月の成果」「課題」はAIが日々の日報データをもとに自動生成しています。内容をご確認のうえご活用ください。</div>':'';
-
   return `
   <h1>${sh(clientName)}　月次業務報告書</h1>
   <h2>${y}年${m+1}月</h2>
