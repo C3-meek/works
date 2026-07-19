@@ -182,6 +182,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .range-modal .range-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .range-modal .modal-field input[type=date]{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
 .range-modal .modal-field input[type=date]:focus{border-color:var(--accent);background:var(--surface)}
+.range-modal .modal-field select{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none;cursor:pointer}
+.range-modal .modal-field select:focus{border-color:var(--accent);background:var(--surface)}
+.range-modal .modal-field textarea{resize:vertical;outline:none}
+.range-modal .modal-field textarea:focus{border-color:var(--accent);background:var(--surface)}
 .range-preview{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7;min-height:38px}
 .range-preview strong{color:var(--accent);font-weight:700}
 .range-progress{display:none;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--text2)}
@@ -257,6 +261,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="color:var(--text3);font-size:13px">クライアントを選択してください</div>
       </div>
       <div class="top-bar-actions">
+        <button class="btn btn-sm" onclick="openMonthlyReport()">📊 月報</button>
         <button class="btn btn-sm" onclick="openRangePDF()">📄 期間PDF</button>
         <button class="btn btn-sm btn-primary" onclick="printCurrent()">🖨 印刷</button>
       </div>
@@ -349,6 +354,39 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="modal-actions">
       <button class="btn btn-sm" onclick="closeRangePDF()">キャンセル</button>
       <button class="btn btn-sm btn-primary" id="range-export-btn" onclick="exportRangePDF()" disabled>PDF を出力</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 月次報告書 モーダル ===== -->
+<div class="modal-overlay" id="monthly-report-modal">
+  <div class="modal range-modal">
+    <h3>📊 月次報告書を作成</h3>
+    <p style="margin-bottom:14px">「稼働実績」「実施内容」「今月の成果」「課題」の4項目を日々の日報から自動集計して月報を出力します（休日は除外）。</p>
+    <div class="range-row">
+      <div class="modal-field">
+        <label>年</label>
+        <select id="mr-year"></select>
+      </div>
+      <div class="modal-field">
+        <label>月</label>
+        <select id="mr-month"></select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>今月の成果・サマリー（任意）</label>
+      <textarea id="mr-summary" rows="3" placeholder="今月の主な成果を自由記述で入力できます（未入力の場合は完了タスクの一覧のみ表示されます）" style="width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg)"></textarea>
+    </div>
+    <div class="range-preview" id="mr-preview">対象月を選択してください</div>
+    <div class="range-progress" id="mr-progress">
+      <span id="mr-progress-label">取得中...</span>
+      <div class="range-progress-bar-wrap">
+        <div class="range-progress-bar" id="mr-progress-bar"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeMonthlyReport()">キャンセル</button>
+      <button class="btn btn-sm btn-primary" id="mr-generate-btn" onclick="generateMonthlyReport()">月報を生成</button>
     </div>
   </div>
 </div>
@@ -1029,7 +1067,7 @@ async function confirmDelete(){
 
 // ===== 印刷・PDF共通 =====
 function printCSS(accentColor){
-  return `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${accentColor}}h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;page-break-inside:avoid}.report:last-child{border-bottom:none}.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}.r-date{font-size:11.5pt;font-weight:bold}.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.sec{margin-bottom:4mm;page-break-inside:avoid}.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;margin-bottom:2mm;letter-spacing:.05em}.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;line-height:1.8;min-height:1em}.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;color:#1D9E75;margin-top:1.5pt}.img-grid-print{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-top:2mm;page-break-inside:avoid}.img-wrap-print{page-break-inside:avoid;overflow:hidden;border-radius:2px;border:0.5px solid #ddd;background:#f8f8f8}.img-print{width:100%;height:auto;max-height:55mm;object-fit:contain;object-position:center center;display:block}@media print{body{padding:12mm 15mm}}`;
+  return `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}h1{font-size:15pt;text-align:center;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${accentColor}}h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:8mm}.report{margin-bottom:10mm;padding-bottom:8mm;border-bottom:1px solid #E8E5DF;page-break-inside:avoid}.report:last-child{border-bottom:none}.r-header{border-left:4px solid ${accentColor};background:#F8FAF8;padding:3mm 5mm;margin-bottom:5mm;display:flex;justify-content:space-between;align-items:flex-start}.r-date{font-size:11.5pt;font-weight:bold}.r-client{font-size:9.5pt;color:#6B6860;margin-top:0.5mm}.r-time{font-size:9.5pt;color:#0F6E56;font-weight:700}.bsub{background:#E1F5EE;color:#085041;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.bdraft{background:#FAEEDA;color:#BA7517;padding:1mm 3mm;border-radius:3px;font-size:8pt;font-weight:700;display:inline-block;margin-top:1mm}.sec{margin-bottom:4mm;page-break-inside:avoid}.slabel{font-size:8.5pt;font-weight:bold;color:#6B6860;border-bottom:0.5px solid #E8E5DF;padding-bottom:0.8mm;margin-bottom:2mm;letter-spacing:.05em}.sval{font-size:10pt;white-space:pre-wrap;word-break:break-word;line-height:1.8;min-height:1em}.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4mm}.tr{display:flex;gap:3mm;padding:1.5mm 0;border-bottom:.5px solid #F0EDE7;font-size:10pt}.tc{width:10pt;height:10pt;border:1.5px solid #1D9E75;border-radius:2px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;color:#1D9E75;margin-top:1.5pt}.img-grid-print{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-top:2mm}.img-print{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:2px;border:0.5px solid #ddd}@media print{body{padding:12mm 15mm}}`;
 }
 function buildReportHTML(r,clientName){
   let mins=0;
@@ -1055,9 +1093,7 @@ function buildReportHTML(r,clientName){
   const imgs=(r.images||[]).filter(i=>i.url);
   if(imgs.length){
     html+=`<div class="sec"><div class="slabel">添付画像（${imgs.length}枚）</div><div class="img-grid-print">`;
-    imgs.forEach(img=>{
-      html+=`<div class="img-wrap-print"><img class="img-print" src="${esc(img.url)}" alt="${esc(img.name||'')}" crossorigin="anonymous"></div>`;
-    });
+    imgs.forEach(img=>{html+=`<img class="img-print" src="${esc(img.url)}" alt="${esc(img.name||'')}">`});
     html+=`</div></div>`;
   }
   html+=`</div>`;
@@ -1176,8 +1212,206 @@ async function exportRangePDF(){
   },300);
 }
 
+// ===== 月次報告書 (月報) =====
+function monthlyPrintCSS(accentColor){
+  return `*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:10.5pt;color:#1a1a18;padding:18mm 20mm;line-height:1.8}
+h1{font-size:16pt;text-align:center;margin-bottom:2mm}
+h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:10mm;padding-bottom:5mm;border-bottom:2px solid ${accentColor}}
+.mr-section{margin-bottom:10mm;page-break-inside:avoid}
+.mr-section h3{font-size:12pt;color:${accentColor};border-left:4px solid ${accentColor};padding-left:3mm;margin-bottom:5mm}
+.mr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin-bottom:6mm}
+.mr-stat{text-align:center;background:#F8FAF8;border-radius:4px;padding:4mm 2mm}
+.mr-stat-num{font-size:15pt;font-weight:700;color:${accentColor}}
+.mr-stat-label{font-size:8pt;color:#6B6860;margin-top:1mm}
+.mr-table{width:100%;border-collapse:collapse;font-size:9pt}
+.mr-table th{text-align:left;border-bottom:1.5px solid #ccc;padding:2mm;color:#6B6860;font-size:8pt}
+.mr-table td{padding:2mm;border-bottom:0.5px solid #eee;vertical-align:top}
+.mr-item{margin-bottom:4mm;page-break-inside:avoid}
+.mr-item-date{font-size:8.5pt;font-weight:700;color:${accentColor};margin-bottom:1mm}
+.mr-item-body{font-size:10pt;white-space:pre-wrap;word-break:break-word;padding-left:2mm;border-left:2px solid #eee}
+.mr-tag{display:inline-block;background:#F0EDE7;color:#6B6860;font-size:8pt;padding:0.5mm 2mm;border-radius:3px;margin-right:2mm}
+.mr-achieve-list{list-style:none}
+.mr-achieve-list li{padding:1.5mm 0;font-size:10pt;border-bottom:0.5px solid #f0f0f0}
+.mr-summary-text{white-space:pre-wrap;font-size:10pt;margin-bottom:4mm;padding:3mm;background:#F8FAF8;border-radius:4px}
+.mr-empty{color:#9B9890;font-size:9.5pt;font-style:italic}
+@media print{body{padding:12mm 15mm}}`;
+}
+
+function buildMonthlyReportHTML(rows,y,m,summaryText,clientName){
+  let totalMins=0,totalDoneTasks=0,totalTasks=0;
+  const tableRows=rows.map(r=>{
+    let mins=0;
+    if(r.time_start&&r.time_end){
+      const[sh1,sm1]=r.time_start.split(':').map(Number),[eh1,em1]=r.time_end.split(':').map(Number);
+      mins=Math.max(0,eh1*60+em1-sh1*60-sm1);
+    }
+    totalMins+=mins;
+    const dt=parseDate(r.date_str);
+    const done=(r.tasks||[]).filter(t=>t.done&&t.text).length;
+    const all=(r.tasks||[]).filter(t=>t.text).length;
+    totalDoneTasks+=done;totalTasks+=all;
+    const hStr=mins>0?`${Math.floor(mins/60)}.${Math.round((mins%60)/6)}`:'—';
+    return `<tr><td>${dt.getDate()}日（${DOW[dt.getDay()]}）</td><td>${sh(r.title||'')}</td><td>${r.time_start&&r.time_end?`${r.time_start}〜${r.time_end}`:''}</td><td style="text-align:right">${hStr}</td><td style="text-align:right">${done}/${all}</td></tr>`;
+  }).join('');
+
+  const hh=Math.floor(totalMins/60),mm2=totalMins%60;
+  const avgMins=rows.length?Math.round(totalMins/rows.length):0;
+  const avgH=Math.floor(avgMins/60),avgM=avgMins%60;
+
+  // 2. 実施内容
+  const workItems=rows.filter(r=>r.work&&r.work.trim()).map(r=>{
+    const dt=parseDate(r.date_str);
+    return `<div class="mr-item"><div class="mr-item-date">${dt.getMonth()+1}/${dt.getDate()}（${DOW[dt.getDay()]}）</div><div class="mr-item-body">${sh(r.work)}</div></div>`;
+  }).join('');
+
+  // 3. 今月の成果（完了タスク一覧 + 任意サマリー）
+  const achievementTasks=[];
+  rows.forEach(r=>{
+    (r.tasks||[]).forEach(t=>{
+      if(t.done&&t.text){
+        const dt=parseDate(r.date_str);
+        achievementTasks.push(`<li><span class="mr-tag">${dt.getMonth()+1}/${dt.getDate()}</span>${sh(t.text)}</li>`);
+      }
+    });
+  });
+  let achievementHTML='';
+  if(summaryText)achievementHTML+=`<div class="mr-summary-text">${sh(summaryText)}</div>`;
+  if(achievementTasks.length)achievementHTML+=`<ul class="mr-achieve-list">${achievementTasks.join('')}</ul>`;
+  else if(!summaryText)achievementHTML+=`<div class="mr-empty">記録された完了タスクはありません</div>`;
+
+  // 4. 課題
+  const issueItems=rows.filter(r=>r.issue&&r.issue.trim()).map(r=>{
+    const dt=parseDate(r.date_str);
+    return `<div class="mr-item"><div class="mr-item-date">${dt.getMonth()+1}/${dt.getDate()}（${DOW[dt.getDay()]}）</div><div class="mr-item-body">${sh(r.issue)}</div></div>`;
+  }).join('');
+
+  return `
+  <h1>${sh(clientName)}　月次業務報告書</h1>
+  <h2>${y}年${m+1}月</h2>
+
+  <div class="mr-section">
+    <h3>1. 稼働実績</h3>
+    <div class="mr-stats">
+      <div class="mr-stat"><div class="mr-stat-num">${rows.length}</div><div class="mr-stat-label">稼働日数</div></div>
+      <div class="mr-stat"><div class="mr-stat-num">${hh}.${Math.round(mm2/6)}</div><div class="mr-stat-label">総稼働時間</div></div>
+      <div class="mr-stat"><div class="mr-stat-num">${avgH}.${Math.round(avgM/6)}</div><div class="mr-stat-label">平均稼働時間/日</div></div>
+      <div class="mr-stat"><div class="mr-stat-num">${totalDoneTasks}/${totalTasks}</div><div class="mr-stat-label">タスク完了</div></div>
+    </div>
+    <table class="mr-table">
+      <thead><tr><th>日付</th><th>タイトル</th><th>作業時間</th><th>稼働時間</th><th>タスク</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+  </div>
+
+  <div class="mr-section">
+    <h3>2. 実施内容</h3>
+    ${workItems||'<div class="mr-empty">記録がありません</div>'}
+  </div>
+
+  <div class="mr-section">
+    <h3>3. 今月の成果</h3>
+    ${achievementHTML}
+  </div>
+
+  <div class="mr-section">
+    <h3>4. 課題</h3>
+    ${issueItems||'<div class="mr-empty">記録された課題はありません</div>'}
+  </div>
+  `;
+}
+
+function openMonthlyReport(){
+  if(!activeClient){alert('クライアントを選択してください');return}
+  const yearSel=document.getElementById('mr-year');
+  const monthSel=document.getElementById('mr-month');
+  yearSel.innerHTML='';monthSel.innerHTML='';
+  const nowY=now.getFullYear();
+  for(let y=nowY-2;y<=nowY+1;y++){
+    const opt=document.createElement('option');opt.value=y;opt.textContent=y+'年';
+    if(y===curYear)opt.selected=true;
+    yearSel.appendChild(opt);
+  }
+  MO.forEach((label,i)=>{
+    const opt=document.createElement('option');opt.value=i+1;opt.textContent=label;
+    if(i===curMonth)opt.selected=true;
+    monthSel.appendChild(opt);
+  });
+  document.getElementById('mr-summary').value='';
+  document.getElementById('mr-progress').classList.remove('visible');
+  document.getElementById('mr-generate-btn').disabled=false;
+  updateMonthlyPreview();
+  yearSel.onchange=updateMonthlyPreview;monthSel.onchange=updateMonthlyPreview;
+  document.getElementById('monthly-report-modal').classList.add('open');
+}
+function closeMonthlyReport(){
+  document.getElementById('monthly-report-modal').classList.remove('open');
+}
+function updateMonthlyPreview(){
+  const y=document.getElementById('mr-year').value;
+  const m=document.getElementById('mr-month').value;
+  const preview=document.getElementById('mr-preview');
+  if(!y||!m){preview.textContent='対象月を選択してください';return}
+  preview.innerHTML=`<strong>${y}年${m}月</strong> の日報を対象に月報を作成します<br><span style="color:var(--text3)">稼働日報のみ集計（休日除外）</span>`;
+}
+
+async function generateMonthlyReport(){
+  if(!activeClient)return;
+  const y=parseInt(document.getElementById('mr-year').value,10);
+  const m=parseInt(document.getElementById('mr-month').value,10)-1;
+  const summaryText=document.getElementById('mr-summary').value.trim();
+
+  const btn=document.getElementById('mr-generate-btn');
+  const progress=document.getElementById('mr-progress');
+  const progressBar=document.getElementById('mr-progress-bar');
+  const progressLabel=document.getElementById('mr-progress-label');
+
+  btn.disabled=true;
+  progress.classList.add('visible');
+  progressLabel.textContent='Supabase からデータを取得中...';
+  progressBar.style.width='20%';
+  setSyncStatus('syncing','取得中...');
+
+  let rows;
+  try{
+    rows=await sbSelectMonth(activeClient.id,y,m);
+    setSyncStatus('ok','Supabase 接続済');
+  }catch(e){
+    setSyncStatus('error','エラー');
+    showToast('❌ 取得失敗: '+e.message);
+    btn.disabled=false;progress.classList.remove('visible');
+    return;
+  }
+
+  progressBar.style.width='60%';
+  progressLabel.textContent='月報を生成中...';
+
+  const workRows=rows.filter(r=>!r.is_holiday).sort((a,b)=>a.date_str<b.date_str?-1:a.date_str>b.date_str?1:0);
+  if(!workRows.length){
+    alert('指定月に稼働日報がありません（休日のみ、または日報なし）');
+    btn.disabled=false;progress.classList.remove('visible');
+    return;
+  }
+
+  const body=buildMonthlyReportHTML(workRows,y,m,summaryText,activeClient.name);
+
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${activeClient.name} ${y}年${m+1}月 月次業務報告書</title><style>${monthlyPrintCSS(activeClient.color)}</style></head><body>${body}</body></html>`);
+  win.document.close();
+
+  progressBar.style.width='100%';
+  progressLabel.textContent='完了';
+  setTimeout(()=>{
+    win.print();
+    btn.disabled=false;
+    progress.classList.remove('visible');
+    closeMonthlyReport();
+    showToast(`✓ ${y}年${m+1}月の月報を生成しました（${workRows.length}件の日報を集計）`);
+  },300);
+}
+
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeLightbox();closeRangePDF()}
+  if(e.key==='Escape'){closeLightbox();closeRangePDF();closeMonthlyReport()}
   if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();if(selectedDate&&activeClient)doSave(false)}
 });
 
