@@ -1288,7 +1288,7 @@ h1{font-size:16pt;text-align:center;margin-bottom:2mm}
 h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:10mm;padding-bottom:5mm;border-bottom:2px solid ${accentColor}}
 .mr-section{margin-bottom:10mm;page-break-inside:avoid}
 .mr-section h3{font-size:12pt;color:${accentColor};border-left:4px solid ${accentColor};padding-left:3mm;margin-bottom:5mm}
-.mr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin-bottom:6mm}
+.mr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-bottom:6mm}
 .mr-stat{text-align:center;background:#F8FAF8;border-radius:4px;padding:4mm 2mm}
 .mr-stat-num{font-size:15pt;font-weight:700;color:${accentColor}}
 .mr-stat-label{font-size:8pt;color:#6B6860;margin-top:1mm}
@@ -1307,7 +1307,7 @@ h2{font-size:11pt;text-align:center;color:#6B6860;margin-bottom:10mm;padding-bot
 }
 
 function buildMonthlyReportHTML(rows,y,m,summaryText,clientName,aiSummary){
-  let totalMins=0,totalDoneTasks=0,totalTasks=0;
+  let totalMins=0;
   const tableRows=rows.map(r=>{
     let mins=0;
     if(r.time_start&&r.time_end){
@@ -1316,11 +1316,8 @@ function buildMonthlyReportHTML(rows,y,m,summaryText,clientName,aiSummary){
     }
     totalMins+=mins;
     const dt=parseDate(r.date_str);
-    const done=(r.tasks||[]).filter(t=>t.done&&t.text).length;
-    const all=(r.tasks||[]).filter(t=>t.text).length;
-    totalDoneTasks+=done;totalTasks+=all;
     const hStr=mins>0?`${Math.floor(mins/60)}.${Math.round((mins%60)/6)}`:'—';
-    return `<tr><td>${dt.getDate()}日（${DOW[dt.getDay()]}）</td><td>${sh(r.title||'')}</td><td>${r.time_start&&r.time_end?`${r.time_start}〜${r.time_end}`:''}</td><td style="text-align:right">${hStr}</td><td style="text-align:right">${done}/${all}</td></tr>`;
+    return `<tr><td>${dt.getDate()}日（${DOW[dt.getDay()]}）</td><td>${sh(r.title||'')}</td><td>${r.time_start&&r.time_end?`${r.time_start}〜${r.time_end}`:''}</td><td style="text-align:right">${hStr}</td></tr>`;
   }).join('');
 
   const hh=Math.floor(totalMins/60),mm2=totalMins%60;
@@ -1380,10 +1377,9 @@ function buildMonthlyReportHTML(rows,y,m,summaryText,clientName,aiSummary){
       <div class="mr-stat"><div class="mr-stat-num">${rows.length}</div><div class="mr-stat-label">稼働日数</div></div>
       <div class="mr-stat"><div class="mr-stat-num">${hh}.${Math.round(mm2/6)}</div><div class="mr-stat-label">総稼働時間</div></div>
       <div class="mr-stat"><div class="mr-stat-num">${avgH}.${Math.round(avgM/6)}</div><div class="mr-stat-label">平均稼働時間/日</div></div>
-      <div class="mr-stat"><div class="mr-stat-num">${totalDoneTasks}/${totalTasks}</div><div class="mr-stat-label">タスク完了</div></div>
     </div>
     <table class="mr-table">
-      <thead><tr><th>日付</th><th>タイトル</th><th>作業時間</th><th>稼働時間</th><th>タスク</th></tr></thead>
+      <thead><tr><th>日付</th><th>タイトル</th><th>作業時間</th><th>稼働時間</th></tr></thead>
       <tbody>${tableRows}</tbody>
     </table>
   </div>
