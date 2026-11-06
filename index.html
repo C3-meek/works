@@ -123,12 +123,28 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .form-row .form-section{margin-bottom:0}
 .task-list{list-style:none;margin-bottom:7px}
-.task-item{display:flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid var(--border);border-radius:7px;margin-bottom:4px;background:var(--bg)}
+.task-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--border);border-left-width:3px;border-radius:7px;margin-bottom:4px;background:var(--bg);transition:box-shadow 0.1s}
+.task-item.lv0{border-left-color:var(--accent)}
+.task-item.lv1{margin-left:26px;border-left-color:#5B9BD5}
+.task-item.lv2{margin-left:52px;border-left-color:#D9A441}
+.task-item.dragging{opacity:0.35}
+.task-item.drop-before{box-shadow:0 -3px 0 0 var(--accent)}
+.task-item.drop-after{box-shadow:0 3px 0 0 var(--accent)}
+.task-handle{cursor:grab;color:var(--text3);font-size:12px;letter-spacing:-2px;user-select:none;padding:2px 3px;flex-shrink:0;line-height:1}
+.task-handle:hover{color:var(--text2)}
+.task-handle:active{cursor:grabbing}
+.task-lv-tag{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;flex-shrink:0;line-height:1.5}
+.task-lv-tag.lv0{background:var(--accent-light);color:var(--accent-text)}
+.task-lv-tag.lv1{background:#E3EEF9;color:#185FA5}
+.task-lv-tag.lv2{background:var(--amber-light);color:var(--amber)}
+.task-ctrls{display:flex;gap:1px;flex-shrink:0}
+.task-ctrl{background:none;border:1px solid transparent;border-radius:5px;cursor:pointer;color:var(--text2);font-size:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:0;font-family:var(--font);line-height:1}
+.task-ctrl:hover:not(:disabled){background:var(--accent-light);color:var(--accent-text);border-color:#9FE1CB}
+.task-ctrl:disabled{opacity:0.25;cursor:not-allowed}
+.task-ctrl.danger:hover:not(:disabled){background:var(--red-light);color:var(--red);border-color:#F0997B}
 .task-item.done-item{opacity:0.5}
 .task-cb{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
 .task-txt{flex:1;border:none;background:none;padding:0;font-size:13px;color:var(--text);outline:none;font-family:var(--font)}
-.task-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0;line-height:1;width:18px;text-align:center}
-.task-del:hover{color:var(--red)}
 .add-task-btn{background:none;border:1.5px dashed var(--border2);border-radius:7px;width:100%;padding:6px;cursor:pointer;font-size:12px;color:var(--text2);font-family:var(--font);transition:all 0.1s}
 .add-task-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .time-row{display:flex;align-items:center;gap:7px}
@@ -211,7 +227,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .mr-autofill-btn:hover{background:#EAF1FA;border-color:var(--blue)}
 
 @media print{
-  .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,
+  .sidebar,.top-bar-actions,.form-actions,.add-task-btn,.task-del,.task-handle,.task-ctrls,.task-lv-tag,
   .cal-nav-btn,.sidebar-footer,.modal-overlay,.toast,
   .img-drop-zone,.img-del,.img-count{display:none!important}
   html,body{height:auto!important;overflow:visible!important}
@@ -673,7 +689,8 @@ async function connectSupabase(){
     const r=await fetch(`${SB_URL}/rest/v1/daily_reports?limit=1`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
     if(r.status===404||r.status===400){
       const b=await r.json().catch(()=>({}));
-      if(b.message&&b.message.includes('relation')){showSetupError('テーブル "daily_reports" が見つかりません。\n以下のSQLをSupabase SQL Editorで実行してください：\n\n'+setupSQL());return}
+      const bm=b.message||'';
+      if(bm.includes('relation')||bm.includes('Could not find the table')||bm.includes('schema cache')){showSetupError('テーブル "daily_reports" が見つかりません。\n以下のSQLをSupabase SQL Editorで実行してください：\n\n'+setupSQL());return}
     }
     if(!r.ok&&r.status!==200){showSetupError(`接続エラー (HTTP ${r.status})`);return}
   }catch(e){showSetupError('接続できません: '+e.message);return}
@@ -909,7 +926,7 @@ function renderForm(ds,row){
     tasks:[{text:'',done:false}],work:'',issue:'',next:'',memo:'',submitted:false,
     isHoliday:false,images:[]
   };
-  tasks=r.tasks.map(t=>({...t}));
+  tasks=r.tasks.map(t=>({level:0,...t}));
   reportImages=r.images.map(i=>({...i}));
 
   const holidayBanner=r.isHoliday
@@ -960,6 +977,7 @@ function renderForm(ds,row){
           <button class="add-task-btn" id="btn-carryover" style="flex:1;color:var(--blue)"
             onclick="carryOverTasks()" title="未完了タスクを翌日の日報に追加します">📋 未完了を翌日へ持ち越し</button>
         </div>
+        <div class="setup-hint" style="margin-top:6px;line-height:1.7">⋮⋮ドラッグで並べ替え（親⇔孫も可）／ ←→ 階層変更（Tab・Shift+Tab）／ ↑↓ 順序変更（Alt+↑↓）／ Enter 次のタスクを追加</div>
       </div>
       <div class="form-section">
         <label>作業内容・成果</label>
@@ -1127,17 +1145,164 @@ async function autoSaveHoliday(isHoliday){
 }
 
 // ===== タスク =====
-function renderTasks(){
-  const ul=document.getElementById('task-list');if(!ul)return;ul.innerHTML='';
+// ===== タスク（親・子・孫の階層 / 並べ替え） =====
+const MAX_LEVEL=2;
+const LV_LABEL=['親','子','孫'];
+let dragTaskIdx=null;
+
+// 先頭は必ず親、各行は直前の行より最大1段しか深くできない
+function normalizeTasks(){
   tasks.forEach((t,i)=>{
-    const li=document.createElement('li');
-    li.className='task-item'+(t.done?' done-item':'');
-    li.innerHTML=`<input type="checkbox" class="task-cb" ${t.done?'checked':''} onchange="tasks[${i}].done=this.checked;this.closest('li').classList.toggle('done-item',this.checked)"><input type="text" class="task-txt" value="${esc(t.text)}" placeholder="タスク内容" oninput="tasks[${i}].text=this.value" ${t.done?'style="text-decoration:line-through;color:var(--text3)"':''}><button class="task-del" onclick="removeTask(${i})">&#215;</button>`;
-    ul.appendChild(li);
+    let lv=Number.isInteger(t.level)?t.level:0;
+    lv=Math.max(0,Math.min(MAX_LEVEL,lv));
+    t.level=i===0?0:Math.min(lv,tasks[i-1].level+1);
   });
 }
-function addTask(){tasks.push({text:'',done:false});renderTasks();const ins=document.querySelectorAll('.task-txt');if(ins.length)ins[ins.length-1].focus()}
-function removeTask(i){tasks.splice(i,1);renderTasks()}
+// i のタスクとその配下（子・孫）のまとまりの終端（含まない）
+function blockEnd(i){const lv=tasks[i].level;let j=i+1;while(j<tasks.length&&tasks[j].level>lv)j++;return j}
+function blockMaxLevel(i){const e=blockEnd(i);let mx=tasks[i].level;for(let k=i+1;k<e;k++)mx=Math.max(mx,tasks[k].level);return mx}
+function prevSiblingStart(i){const lv=tasks[i].level;for(let k=i-1;k>=0;k--){if(tasks[k].level<lv)return -1;if(tasks[k].level===lv)return k}return -1}
+function nextSiblingStart(i){const e=blockEnd(i);return(e<tasks.length&&tasks[e].level===tasks[i].level)?e:-1}
+function parentIndex(i){const lv=tasks[i].level;for(let k=i-1;k>=0;k--){if(tasks[k].level<lv)return k}return -1}
+function canIndent(i){return i>0&&tasks[i].level<=tasks[i-1].level&&blockMaxLevel(i)+1<=MAX_LEVEL}
+function canMoveUp(i){return prevSiblingStart(i)>=0||tasks[i].level>0}
+function canMoveDown(i){return nextSiblingStart(i)>=0||tasks[i].level>0}
+function shiftBlock(i,delta){const e=blockEnd(i);for(let k=i;k<e;k++)tasks[k].level+=delta}
+
+function indentTask(i){
+  if(!canIndent(i)){showToast(i===0?'先頭のタスクは子タスクにできません':'これ以上は階層を深くできません（親→子→孫まで）');return}
+  shiftBlock(i,1);renderTasks(i);
+}
+function outdentTask(i){
+  if(!tasks[i]||tasks[i].level<=0)return;
+  shiftBlock(i,-1);renderTasks(i);
+}
+// 同じ階層の兄弟と入れ替え。兄弟がいなければ（先頭の子/末尾の子）親の外へ出る
+function moveTaskUp(i){
+  if(!canMoveUp(i))return;
+  const e=blockEnd(i),s=prevSiblingStart(i);
+  if(s>=0){
+    const block=tasks.splice(i,e-i);tasks.splice(s,0,...block);renderTasks(s);return;
+  }
+  const p=parentIndex(i);
+  const block=tasks.splice(i,e-i);
+  block.forEach(t=>{t.level-=1});
+  tasks.splice(p,0,...block);renderTasks(p);
+}
+function moveTaskDown(i){
+  if(!canMoveDown(i))return;
+  const e=blockEnd(i),n=nextSiblingStart(i);
+  if(n>=0){
+    const ne=blockEnd(n);
+    const sib=tasks.splice(n,ne-n);tasks.splice(i,0,...sib);renderTasks(i+(ne-n));return;
+  }
+  const p=parentIndex(i);
+  const block=tasks.splice(i,e-i);
+  block.forEach(t=>{t.level-=1});
+  const pe=blockEnd(p);
+  tasks.splice(pe,0,...block);renderTasks(pe);
+}
+// ドラッグ＆ドロップ：ドロップ先の行と同じ階層になる（親⇔孫の入れ替えも可能）
+function moveBlockTo(from,target,before){
+  const e=blockEnd(from);
+  if(target>=from&&target<e)return;
+  const targetLevel=tasks[target].level;
+  const block=tasks.splice(from,e-from);
+  const tIdx=target>=e?target-block.length:target;
+  const insertAt=before?tIdx:blockEnd(tIdx);
+  const mx=Math.max(...block.map(t=>t.level));
+  const delta=Math.min(targetLevel-block[0].level,MAX_LEVEL-mx);
+  block.forEach(t=>{t.level+=delta});
+  tasks.splice(insertAt,0,...block);
+  normalizeTasks();renderTasks(insertAt);
+}
+function clearDropMarks(){document.querySelectorAll('#task-list .task-item').forEach(l=>l.classList.remove('dragging','drop-before','drop-after'))}
+
+function addTask(){tasks.push({text:'',done:false,level:0});renderTasks(tasks.length-1)}
+function addChildTask(i){const at=blockEnd(i);tasks.splice(at,0,{text:'',done:false,level:Math.min(tasks[i].level+1,MAX_LEVEL)});renderTasks(at)}
+function addTaskAfter(i){const at=blockEnd(i);tasks.splice(at,0,{text:'',done:false,level:tasks[i].level});renderTasks(at)}
+// 削除：配下のタスクは1段繰り上げて残す
+function removeTask(i,focusPrev){
+  if(!tasks[i])return;
+  const e=blockEnd(i);
+  for(let k=i+1;k<e;k++)tasks[k].level=Math.max(0,tasks[k].level-1);
+  tasks.splice(i,1);
+  renderTasks(focusPrev?Math.max(0,i-1):undefined);
+}
+
+function renderTasks(focusIdx){
+  const ul=document.getElementById('task-list');if(!ul)return;
+  normalizeTasks();ul.innerHTML='';
+  tasks.forEach((t,i)=>{
+    const lv=t.level;
+    const li=document.createElement('li');
+    li.className='task-item lv'+lv+(t.done?' done-item':'');
+    const ph=lv===0?'タスク内容':lv===1?'子タスク内容':'孫タスク内容';
+    li.innerHTML=
+      `<span class="task-handle" draggable="true" title="ドラッグして並べ替え（親⇔孫の移動も可）">⋮⋮</span>`+
+      `<span class="task-lv-tag lv${lv}">${LV_LABEL[lv]}</span>`+
+      `<input type="checkbox" class="task-cb"${t.done?' checked':''}>`+
+      `<input type="text" class="task-txt" value="${esc(t.text)}" placeholder="${ph}"${t.done?' style="text-decoration:line-through;color:var(--text3)"':''}>`+
+      `<span class="task-ctrls">`+
+        `<button type="button" class="task-ctrl" data-act="child" title="${lv<MAX_LEVEL?'この下に子タスクを追加':'同じ階層にタスクを追加'}">＋</button>`+
+        `<button type="button" class="task-ctrl" data-act="outdent" title="階層を上げる（Shift+Tab）"${lv>0?'':' disabled'}>←</button>`+
+        `<button type="button" class="task-ctrl" data-act="indent" title="階層を下げる（Tab）"${canIndent(i)?'':' disabled'}>→</button>`+
+        `<button type="button" class="task-ctrl" data-act="up" title="上へ（Alt+↑）"${canMoveUp(i)?'':' disabled'}>↑</button>`+
+        `<button type="button" class="task-ctrl" data-act="down" title="下へ（Alt+↓）"${canMoveDown(i)?'':' disabled'}>↓</button>`+
+        `<button type="button" class="task-ctrl danger" data-act="del" title="削除">×</button>`+
+      `</span>`;
+    const cb=li.querySelector('.task-cb'),inp=li.querySelector('.task-txt'),handle=li.querySelector('.task-handle');
+    cb.addEventListener('change',()=>{
+      t.done=cb.checked;li.classList.toggle('done-item',cb.checked);
+      inp.style.textDecoration=cb.checked?'line-through':'';inp.style.color=cb.checked?'var(--text3)':'';
+    });
+    inp.addEventListener('input',()=>{t.text=inp.value});
+    inp.addEventListener('keydown',e=>{
+      if(e.isComposing||e.keyCode===229)return; // 日本語IMEの変換確定Enterは無視
+      if(e.key==='Enter'){e.preventDefault();addTaskAfter(i)}
+      else if(e.key==='Tab'){e.preventDefault();e.shiftKey?outdentTask(i):indentTask(i)}
+      else if(e.altKey&&e.key==='ArrowUp'){e.preventDefault();moveTaskUp(i)}
+      else if(e.altKey&&e.key==='ArrowDown'){e.preventDefault();moveTaskDown(i)}
+      else if(e.key==='Backspace'&&!inp.value&&tasks.length>1){e.preventDefault();removeTask(i,true)}
+    });
+    li.querySelectorAll('.task-ctrl').forEach(b=>b.addEventListener('click',()=>{
+      const act=b.dataset.act;
+      if(act==='child')addChildTask(i);
+      else if(act==='outdent')outdentTask(i);
+      else if(act==='indent')indentTask(i);
+      else if(act==='up')moveTaskUp(i);
+      else if(act==='down')moveTaskDown(i);
+      else if(act==='del')removeTask(i);
+    }));
+    handle.addEventListener('dragstart',e=>{
+      dragTaskIdx=i;e.dataTransfer.effectAllowed='move';
+      try{e.dataTransfer.setData('text/plain',String(i));e.dataTransfer.setDragImage(li,14,14)}catch(_){}
+      li.classList.add('dragging');
+    });
+    handle.addEventListener('dragend',()=>{dragTaskIdx=null;clearDropMarks()});
+    li.addEventListener('dragover',e=>{
+      if(dragTaskIdx===null)return;
+      if(i>=dragTaskIdx&&i<blockEnd(dragTaskIdx))return;
+      e.preventDefault();e.dataTransfer.dropEffect='move';
+      const r=li.getBoundingClientRect(),before=e.clientY<r.top+r.height/2;
+      document.querySelectorAll('#task-list .task-item').forEach(l=>l.classList.remove('drop-before','drop-after'));
+      li.classList.add(before?'drop-before':'drop-after');
+    });
+    li.addEventListener('dragleave',()=>li.classList.remove('drop-before','drop-after'));
+    li.addEventListener('drop',e=>{
+      if(dragTaskIdx===null)return;
+      e.preventDefault();
+      const r=li.getBoundingClientRect(),before=e.clientY<r.top+r.height/2;
+      const from=dragTaskIdx;dragTaskIdx=null;clearDropMarks();
+      moveBlockTo(from,i,before);
+    });
+    ul.appendChild(li);
+  });
+  if(focusIdx!=null){
+    const inp=ul.querySelectorAll('.task-txt')[focusIdx];
+    if(inp){inp.focus();const n=inp.value.length;try{inp.setSelectionRange(n,n)}catch(_){}}
+  }
+}
 
 function nextDateStr(ds){const dt=parseDate(ds);dt.setDate(dt.getDate()+1);return fd(dt)}
 async function carryOverTasks(){
@@ -1153,7 +1318,7 @@ async function carryOverTasks(){
     let nextRow=getCached(activeClient.id,nextDs);
     if(!nextRow)nextRow=await sbSelect(activeClient.id,nextDs).catch(()=>null);
     const existingTexts=new Set((nextRow?.tasks||[]).map(t=>t.text));
-    const toAdd=pending.filter(t=>!existingTexts.has(t.text)).map(t=>({text:t.text,done:false}));
+    const toAdd=pending.filter(t=>!existingTexts.has(t.text)).map(t=>({text:t.text,done:false,level:t.level||0}));
     if(toAdd.length===0){showToast('翌日にすでに同じタスクが存在します');return}
     const mergedTasks=[...(nextRow?.tasks||[]),...toAdd];
     const nextData={client_id:activeClient.id,date_str:nextDs,title:nextRow?.title||'',client:nextRow?.client||activeClient.name,time_start:nextRow?.time_start||'09:00',time_end:nextRow?.time_end||'18:00',tasks:mergedTasks,work:nextRow?.work||'',issue:nextRow?.issue||'',next_plan:nextRow?.next_plan||'',memo:nextRow?.memo||'',submitted:nextRow?.submitted||false,is_holiday:nextRow?.is_holiday||false,images:nextRow?.images||[],updated_at:new Date().toISOString()};
@@ -1246,7 +1411,7 @@ function buildReportHTML(r,clientName){
   const dl=`${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${DOW[dt.getDay()]}）${r.title?' — '+sh(r.title):''}`;
   let html=`<div class="report"><div class="r-header"><div><div class="r-date">${dl}</div><div class="r-client">${sh(r.client||clientName)}</div></div><div style="text-align:right"><div class="r-time">${sh(tl)}</div><span class="${r.submitted?'bsub':'bdraft'}">${r.submitted?'✓ 提出済':'下書き'}</span></div></div>`;
   const vt=(r.tasks||[]).filter(t=>t.text);
-  if(vt.length){html+=`<div class="sec"><div class="slabel">タスク</div>`;vt.forEach(t=>{html+=`<div class="tr"><div class="tc">${t.done?'✓':''}</div><div>${sh(t.text)}</div></div>`});html+=`</div>`}
+  if(vt.length){html+=`<div class="sec"><div class="slabel">タスク</div>`;vt.forEach(t=>{html+=`<div class="tr" style="padding-left:${(t.level||0)*6}mm"><div class="tc">${t.done?'✓':''}</div><div>${sh(t.text)}</div></div>`});html+=`</div>`}
   if(r.work)html+=`<div class="sec"><div class="slabel">作業内容・成果</div><div class="sval">${sh(r.work)}</div></div>`;
   if(r.issue||r.next_plan){
     html+=`<div class="g2">`;
@@ -1513,11 +1678,12 @@ async function callClaudeSummary(apiKey,workRows,clientName,y,m){
     title:r.title||'',
     work:r.work||'',
     issue:r.issue||'',
-    tasks:(r.tasks||[]).filter(t=>t.text).map(t=>({text:t.text,done:!!t.done}))
+    tasks:(r.tasks||[]).filter(t=>t.text).map(t=>({text:t.text,done:!!t.done,level:t.level||0}))
   }));
   const sys=`あなたはIT・業務委託の月次報告書作成を支援するアシスタントです。与えられた日次日報データから、クライアント向け月次報告書に掲載する3つのセクション文章を作成してください。
 出力は必ず次のJSON形式のみとし、前置き・後書き・コードブロック記法（\`\`\`）は一切含めないでください。
 {"work_summary":"実施内容のまとめ。日付を羅列するのではなく、実施した作業をテーマ・カテゴリごとに整理した文章（箇条書きの場合は各行を「・」で始める）","achievements_summary":"今月の成果のまとめ。完了したタスクや具体的な成果物・進捗を中心に、クライアントに伝わる言葉で記述","issues_summary":"課題・懸念点のまとめ。重複や類似の課題はまとめ、分かる範囲で深刻度や対応状況にも触れる。課題が無ければ「特筆すべき課題はありませんでした。」としてください"}
+タスクのlevelは階層（0=親、1=子、2=孫）を表します。親タスクの下に子・孫タスクがぶら下がる構造として解釈してください。
 文体は丁寧語（です・ます調）で、簡潔かつ具体的に記述してください。`;
   const usr=`クライアント名: ${clientName}\n対象月: ${y}年${m+1}月\n\n日次日報データ(JSON):\n${JSON.stringify(compact)}`;
   const res=await fetch('https://api.anthropic.com/v1/messages',{
@@ -1772,11 +1938,12 @@ async function saveManualMonthlyReport(){
     showToast('💾 月報（手入力）を保存しました');
   }catch(e){
     setSyncStatus('error','保存エラー');
-    if(e.message&&e.message.includes('relation')){
+    const msg=e.message||'';
+    if(msg.includes('relation')||msg.includes('Could not find the table')||msg.includes('schema cache')){
       showToast('❌ monthly_reports_manual テーブルが存在しません');
       alert('Supabase に "monthly_reports_manual" テーブルがありません。\nSQL Editor で以下を実行してください：\n\n'+manualSetupSQL());
     }else{
-      showToast('❌ 保存失敗: '+e.message);
+      showToast('❌ 保存失敗: '+msg);
     }
   }
 }
