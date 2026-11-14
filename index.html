@@ -246,6 +246,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .img-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px!important}
   .img-thumb{page-break-inside:avoid;border:1px solid #ccc!important}
 }
+
+.weekly-modal{width:min(1200px,96vw);max-height:92vh;overflow-y:auto}
+.wk-nav{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.wk-nav .wk-title{font-size:14px;font-weight:700;flex:1;text-align:center}
+.wk-opts{display:flex;gap:8px;align-items:center;margin:8px 0 10px;flex-wrap:wrap;font-size:12px;color:var(--text2)}
+.wk-opts select{padding:5px 8px;border:1px solid var(--border2);border-radius:6px;font-family:var(--font);font-size:12px;background:var(--bg)}
+.wk-scroll{overflow:auto;max-height:52vh;border:1px solid var(--border);border-radius:8px}
+.wk-table{border-collapse:collapse;width:100%;table-layout:fixed;min-width:780px}
+.wk-table th{position:sticky;top:0;background:var(--surface);z-index:2;font-size:12px;padding:6px;border-bottom:1px solid var(--border2)}
+.wk-table th.sun{color:#D85A30}.wk-table th.sat{color:#185FA5}
+.wk-table th.today{background:var(--accent-light);color:var(--accent-text)}
+.wk-table td{border:1px solid var(--border);padding:0;height:30px}
+.wk-table td.tm{width:54px;font-size:11px;color:var(--text3);text-align:right;padding:0 6px;background:var(--bg)}
+.wk-table tr.hr td{border-top:1.5px solid var(--border2)}
+.wk-table input{width:100%;height:100%;border:none;background:transparent;padding:4px 6px;font-size:12px;font-family:var(--font);outline:none}
+.wk-table input:focus{background:var(--accent-light)}
+.wk-table input.filled{background:#EEF7F3;font-weight:600}
 </style>
 </head>
 <body>
@@ -295,6 +312,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div style="color:var(--text3);font-size:13px">クライアントを選択してください</div>
       </div>
       <div class="top-bar-actions">
+        <button class="btn btn-sm" onclick="openWeeklyPlan()">🗓 週間予定</button>
         <button class="btn btn-sm" onclick="openManualMonthlyReport()">📝 月報（書式手入力）</button>
         <button class="btn btn-sm" onclick="openMonthlyReport()">📊 月報（AI要約）</button>
         <button class="btn btn-sm" onclick="openRangePDF()">📄 期間PDF</button>
@@ -504,7 +522,36 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
   </div>
 </div>
-
+<div class="modal-overlay" id="weekly-modal">
+  <div class="modal weekly-modal">
+    <h3>🗓 週間予定</h3>
+    <div class="wk-nav">
+      <button class="btn btn-sm" onclick="wkMove(-7)">‹ 前週</button>
+      <button class="btn btn-sm" onclick="wkMove(0)">今週</button>
+      <span class="wk-title" id="wk-title"></span>
+      <button class="btn btn-sm" onclick="wkMove(7)">翌週 ›</button>
+    </div>
+    <div class="modal-field" style="margin-bottom:0">
+      <label>今週の目標・メモ</label>
+      <input type="text" id="wk-note" placeholder="今週の目標など" oninput="wkNote=this.value">
+    </div>
+    <div class="wk-opts">
+      刻み
+      <select id="wk-step" onchange="wkOpt()"><option value="60">1時間</option><option value="30">30分</option></select>
+      表示時間
+      <select id="wk-from" onchange="wkOpt()"></select>〜
+      <select id="wk-to" onchange="wkOpt()"></select>
+      <span style="color:var(--text3)">Enterで下のセルへ移動 ／ 範囲外の予定も保存されています</span>
+    </div>
+    <div class="wk-scroll"><table class="wk-table" id="wk-table"></table></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeWeeklyPlan()">閉じる</button>
+      <button class="btn btn-sm" onclick="wkPrint()">🖨 印刷</button>
+      <button class="btn btn-sm btn-primary" onclick="wkSave()">💾 保存</button>
+    </div>
+  </div>
+</div>
+  
 <!-- ライトボックス -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -1990,8 +2037,134 @@ async function exportManualMonthlyReportPDF(){
   try{await sbUpsertManualMonthly(data);manualReportCache[manCacheKey(activeClient.id,data.year_month)]=data;}catch(e){/* PDF出力は継続、保存失敗は無視 */}
 }
 
+// ===== 週間予定（時間割） =====
+let wkStart=null,wkPlan={},wkNote='';
+const WK_CFG_KEY='nippo_wk_cfg';
+const WK_SQL=`create table weekly_plans (
+  id bigserial primary key,
+  client_id text not null,
+  week_start text not null,
+  plan jsonb default '{}',
+  note text default '',
+  updated_at timestamptz default now(),
+  unique(client_id, week_start)
+);`;
+function addDays(ds,n){const d=parseDate(ds);d.setDate(d.getDate()+n);return fd(d)}
+function mondayOf(ds){const d=parseDate(ds);d.setDate(d.getDate()-((d.getDay()+6)%7));return fd(d)}
+function wkCfg(){let c=null;try{c=JSON.parse(localStorage.getItem(WK_CFG_KEY))}catch{}return{step:60,from:8,to:21,...(c||{})}}
+function wkSlots(){
+  const c=wkCfg(),a=[];
+  for(let m=c.from*60;m<c.to*60;m+=c.step)a.push(`${p2(Math.floor(m/60))}:${p2(m%60)}`);
+  return a;
+}
+function wkDay(ds){return(wkPlan[ds]&&typeof wkPlan[ds]==='object')?wkPlan[ds]:{}}
+
+function wkOpt(){
+  const c={step:+document.getElementById('wk-step').value,from:+document.getElementById('wk-from').value,to:+document.getElementById('wk-to').value};
+  if(c.from>=c.to){showToast('表示時間の範囲を正しく指定してください');wkInitOpts();return}
+  localStorage.setItem(WK_CFG_KEY,JSON.stringify(c));wkRender();
+}
+function wkInitOpts(){
+  const c=wkCfg(),f=document.getElementById('wk-from'),t=document.getElementById('wk-to');
+  f.innerHTML='';t.innerHTML='';
+  for(let h=0;h<=23;h++)f.innerHTML+=`<option value="${h}">${h}:00</option>`;
+  for(let h=1;h<=24;h++)t.innerHTML+=`<option value="${h}">${h}:00</option>`;
+  f.value=c.from;t.value=c.to;document.getElementById('wk-step').value=c.step;
+}
+
+async function openWeeklyPlan(){
+  if(!activeClient){alert('クライアントを選択してください');return}
+  wkStart=mondayOf(selectedDate||todayStr);
+  wkInitOpts();
+  document.getElementById('weekly-modal').classList.add('open');
+  await wkLoad();
+}
+function closeWeeklyPlan(){document.getElementById('weekly-modal').classList.remove('open')}
+async function wkMove(n){wkStart=n===0?mondayOf(todayStr):addDays(wkStart,n);await wkLoad()}
+
+async function wkLoad(){
+  document.getElementById('wk-title').textContent=`${labelDate(wkStart)} 〜 ${labelDate(addDays(wkStart,6))}`;
+  wkPlan={};wkNote='';
+  try{
+    setSyncStatus('syncing','読み込み中...');
+    const r=await sbFetch(`/weekly_plans?client_id=eq.${activeClient.id}&week_start=eq.${wkStart}&select=*`);
+    if(!r.ok){
+      const e=await r.json().catch(()=>({}));
+      if((e.message||'').match(/relation|schema cache|Could not find/))alert('Supabase に "weekly_plans" テーブルがありません。SQL Editor で以下を実行してください：\n\n'+WK_SQL);
+      throw new Error(`HTTP ${r.status}`);
+    }
+    const rows=await r.json();
+    if(rows[0]){wkPlan=rows[0].plan||{};wkNote=rows[0].note||''}
+    setSyncStatus('ok','Supabase 接続済');
+  }catch(e){setSyncStatus('error','読み込みエラー')}
+  wkRender();
+}
+
+function wkRender(){
+  document.getElementById('wk-note').value=wkNote;
+  const days=[...Array(7)].map((_,i)=>addDays(wkStart,i));
+  const tb=document.getElementById('wk-table');
+  let h='<colgroup><col style="width:54px">'+days.map(()=>'<col>').join('')+'</colgroup><thead><tr><th></th>';
+  days.forEach(ds=>{
+    const dt=parseDate(ds),dow=dt.getDay();
+    h+=`<th class="${ds===todayStr?'today':dow===0?'sun':dow===6?'sat':''}">${dt.getMonth()+1}/${dt.getDate()}（${DOW[dow]}）</th>`;
+  });
+  h+='</tr></thead><tbody>';
+  wkSlots().forEach(s=>{
+    h+=`<tr class="${s.endsWith(':00')?'hr':''}"><td class="tm">${s}</td>`;
+    days.forEach(ds=>{
+      const v=wkDay(ds)[s]||'';
+      h+=`<td><input type="text" data-d="${ds}" data-s="${s}" value="${esc(v)}" class="${v?'filled':''}"></td>`;
+    });
+    h+='</tr>';
+  });
+  tb.innerHTML=h+'</tbody>';
+  tb.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const d=inp.dataset.d,s=inp.dataset.s;
+      if(typeof wkPlan[d]!=='object'||!wkPlan[d])wkPlan[d]={};
+      if(inp.value.trim())wkPlan[d][s]=inp.value;else delete wkPlan[d][s];
+      inp.classList.toggle('filled',!!inp.value.trim());
+    });
+    inp.addEventListener('keydown',e=>{
+      if(e.isComposing||e.keyCode===229)return; // IME変換確定のEnterは無視
+      if(e.key==='Enter'||e.key==='ArrowDown'){
+        const tr=inp.closest('tr').nextElementSibling;
+        if(tr){e.preventDefault();tr.children[inp.closest('td').cellIndex].querySelector('input').focus()}
+      }else if(e.key==='ArrowUp'){
+        const tr=inp.closest('tr').previousElementSibling;
+        if(tr){e.preventDefault();tr.children[inp.closest('td').cellIndex].querySelector('input').focus()}
+      }
+    });
+  });
+}
+
+async function wkSave(){
+  try{
+    setSyncStatus('syncing','保存中...');
+    const r=await sbFetch('/weekly_plans?on_conflict=client_id,week_start',{method:'POST',prefer:'resolution=merge-duplicates,return=representation',
+      body:JSON.stringify({client_id:activeClient.id,week_start:wkStart,plan:wkPlan,note:wkNote,updated_at:new Date().toISOString()})});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||`HTTP ${r.status}`)}
+    setSyncStatus('ok','Supabase 接続済');showToast('💾 週間予定を保存しました');
+  }catch(e){setSyncStatus('error','保存エラー');showToast('❌ 保存失敗: '+e.message)}
+}
+
+function wkPrint(){
+  const days=[...Array(7)].map((_,i)=>addDays(wkStart,i));
+  let h=`<h1>${sh(activeClient.name)}　週間予定</h1><h2>${labelDate(wkStart)} 〜 ${labelDate(days[6])}</h2>`;
+  if(wkNote)h+=`<p class="n">今週の目標：${sh(wkNote)}</p>`;
+  h+='<table><tr><th></th>'+days.map(d=>{const dt=parseDate(d);return `<th>${dt.getMonth()+1}/${dt.getDate()}（${DOW[dt.getDay()]}）</th>`}).join('')+'</tr>';
+  wkSlots().forEach(s=>{h+=`<tr><td class="t">${s}</td>`+days.map(d=>`<td>${sh(wkDay(d)[s]||'')}</td>`).join('')+'</tr>'});
+  h+='</table>';
+  const css=`body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Meiryo',sans-serif;font-size:9pt;padding:12mm}h1{font-size:14pt;text-align:center}h2{font-size:10pt;text-align:center;color:#6B6860;margin-bottom:4mm;font-weight:normal}.n{margin-bottom:3mm}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #bbb;padding:1.5mm;height:7mm;vertical-align:top;word-break:break-word}th{background:#F0EDE7}td.t{width:12mm;text-align:right;color:#6B6860;background:#F8FAF8}@page{size:A4 landscape}`;
+  const win=window.open('','_blank');
+  if(!win){showToast('❌ 新しいタブがブロックされました。ポップアップを許可してください');return}
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>週間予定</title><style>${css}</style></head><body>${h}</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),400);
+}
+  
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeLightbox();closeRangePDF();closeMonthlyReport();closeManualMonthlyReport();closeAISettings()}
+  if(e.key==='Escape'){closeLightbox();closeRangePDF();closeMonthlyReport();closeManualMonthlyReport();closeAISettings();closeWeeklyPlan()}
   if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();if(selectedDate&&activeClient)doSave(false)}
 });
 
